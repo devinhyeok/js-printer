@@ -1,0 +1,132 @@
+import { KPISection } from '@/components/widgets/KPISection'
+import { ChartSection } from '@/components/widgets/ChartSection'
+
+<DocPage>
+
+## 시각화 요소 활용
+
+MDX 파일 안에 React 컴포넌트를 직접 삽입해 다양한 시각 요소를 표현할 수 있습니다.
+위젯 컴포넌트는 파일 상단에서 import한 뒤 JSX로 사용합니다.
+
+### KPI 카드
+
+`<KPISection />` 컴포넌트로 핵심 지표를 한눈에 보여줍니다.
+
+<KPISection
+  items={[
+    { label: '문서 포맷', value: 'MDX' },
+    { label: '출력 크기', value: 'A4', unit: 'PDF' },
+    { label: '페이지 제한', value: '없음' },
+  ]}
+/>
+
+```ts
+import { KPISection } from '@/components/widgets/KPISection'
+
+<KPISection
+  items={[
+    { label: '문서 포맷', value: 'MDX' },
+    { label: '출력 크기', value: 'A4', unit: 'PDF' },
+    { label: '페이지 제한', value: '없음' },
+  ]}
+/>
+```
+
+</DocPage>
+
+<DocPage>
+
+### 꺾은선 차트
+
+`<ChartSection />` 컴포넌트에 `{ name, value }` 배열을 전달합니다.
+
+<ChartSection
+  title="월별 문서 생성 건수"
+  data={[
+    { name: '1월', value: 12 },
+    { name: '2월', value: 19 },
+    { name: '3월', value: 27 },
+    { name: '4월', value: 35 },
+    { name: '5월', value: 42 },
+    { name: '6월', value: 56 },
+  ]}
+/>
+
+```ts
+import { ChartSection } from '@/components/widgets/ChartSection'
+
+<ChartSection
+  title="월별 문서 생성 건수"
+  data={[
+    { name: '1월', value: 12 },
+    { name: '2월', value: 19 },
+    { name: '3월', value: 27 },
+    { name: '4월', value: 35 },
+    { name: '5월', value: 42 },
+    { name: '6월', value: 56 },
+  ]}
+/>
+```
+
+</DocPage>
+
+<DocPage>
+
+### 콜아웃 블록
+
+`:::note`, `:::tip`, `:::warning`, `:::important` 문법으로 강조 블록을 삽입합니다.
+
+:::note
+일반적인 참고 사항을 전달할 때 사용합니다.
+:::
+
+:::tip
+유용한 팁이나 권장 사항을 안내할 때 사용합니다.
+:::
+
+:::warning
+주의가 필요한 내용을 경고할 때 사용합니다.
+:::
+
+:::important
+반드시 확인해야 하는 핵심 내용을 강조할 때 사용합니다.
+:::
+
+```md
+:::note
+일반적인 참고 사항을 전달할 때 사용합니다.
+:::
+
+:::warning
+주의가 필요한 내용을 경고할 때 사용합니다.
+:::
+```
+
+</DocPage>
+
+<DocPage>
+
+### 표 (GFM Table)
+
+표준 GFM 문법으로 표를 작성합니다.
+
+| 컴포넌트         | 용도           | Import 필요        |
+| ---------------- | -------------- | ------------------ |
+| `<DocPage>`      | A4 페이지 단위 | 불필요 (자동 주입) |
+| `<KPISection>`   | KPI 카드       | 필요               |
+| `<ChartSection>` | 꺾은선 차트    | 필요               |
+| `<QRCode>`       | QR 코드        | 필요               |
+| `<FolderTree>`   | 폴더 구조 트리 | 필요               |
+
+```md
+| 컴포넌트       | 용도           | Import 필요        |
+| -------------- | -------------- | ------------------ |
+| `<DocPage>`    | A4 페이지 단위 | 불필요 (자동 주입) |
+| `<KPISection>` | KPI 카드       | 필요               |
+```
+
+:::note
+`<DocPage>`는 MDX 컴포넌트 맵에 자동 등록되어 있어 별도 import 없이 사용할 수 있습니다. 나머지 위젯은 파일 상단에서 import해야 합니다.
+:::
+
+</DocPage>

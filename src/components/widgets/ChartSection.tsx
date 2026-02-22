@@ -14,14 +14,18 @@ interface ChartData {
 }
 
 interface ChartSectionProps {
-  title: string
+  title?: string
   data: ChartData[]
 }
 
 export function ChartSection({ title, data }: ChartSectionProps) {
   return (
     <div className="no-break my-6">
-      <h3 className="text-lg font-semibold mb-3">{title}</h3>
+      {title && (
+        <p className="text-sm font-bold mb-2 text-gray-700 text-center">
+          {title}
+        </p>
+      )}
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

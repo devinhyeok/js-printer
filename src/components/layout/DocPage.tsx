@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { collectHeadings } from '@/utils/collectHeadings'
+import { useOverflowDetect } from '@/utils/useOverflowDetect'
 
 export type DocPageType = 'content' | 'cover' | 'toc'
 
@@ -76,27 +78,21 @@ function AutoTOC() {
   const selfRef = useRef<HTMLDivElement>(null)
   const [items, setItems] = useState<TOCItem[]>([])
 
+  useOverflowDetect(selfRef)
+
   useEffect(() => {
-    const allDocs = Array.from(document.querySelectorAll('.doc-wrapper .doc'))
-    const selfDoc = selfRef.current
+    const raw = collectHeadings('.doc-wrapper .doc', selfRef.current)
     const result: TOCItem[] = []
+    let currentH2: TOCItem | null = null
 
-    allDocs.forEach((docEl, docIdx) => {
-      if (docEl === selfDoc) return
-
-      const pageNum = docIdx + 1
-      const headings = Array.from(docEl.querySelectorAll('h2, h3'))
-      let currentH2: TOCItem | null = null
-
-      headings.forEach((el) => {
-        if (el.tagName === 'H2') {
-          currentH2 = { title: el.textContent ?? '', page: pageNum }
-          result.push(currentH2)
-        } else if (el.tagName === 'H3' && currentH2) {
-          if (!currentH2.children) currentH2.children = []
-          currentH2.children.push({ title: el.textContent ?? '', page: pageNum })
-        }
-      })
+    raw.forEach((h) => {
+      if (h.tag === 'H2') {
+        currentH2 = { title: h.text, page: h.page }
+        result.push(currentH2)
+      } else if (h.tag === 'H3' && currentH2) {
+        if (!currentH2.children) currentH2.children = []
+        currentH2.children.push({ title: h.text, page: h.page })
+      }
     })
 
     setItems(result)
@@ -116,12 +112,15 @@ function AutoTOC() {
 }
 
 export function DocPage(props: DocPageProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  useOverflowDetect(ref)
+
   if (props.type === 'cover') {
     return (
       <DocCoverContext.Provider value={true}>
         <div
-          className="doc flex flex-col items-center justify-center text-center"
-          style={{ minHeight: '257mm' }}
+          ref={ref}
+          className="doc doc-cover flex flex-col items-center justify-center text-center"
         >
           {props.children}
         </div>
@@ -133,7 +132,11 @@ export function DocPage(props: DocPageProps) {
     return <AutoTOC />
   }
 
-  return <div className="doc">{props.children}</div>
+  return (
+    <div ref={ref} className="doc">
+      {props.children}
+    </div>
+  )
 }
 
 /** DocMDXComponents에서 cover 안에서 h1/h2/p를 다르게 렌더링할 때 사용 */

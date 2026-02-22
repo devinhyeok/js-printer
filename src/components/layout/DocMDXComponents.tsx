@@ -8,7 +8,7 @@ function H1({ children }: { children?: React.ReactNode }) {
   if (isCover) {
     return (
       <h1
-        className="font-black tracking-tight leading-none mb-6"
+        className="cover-title font-black tracking-tight leading-none mb-6"
         style={{
           fontSize: '5rem',
           background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
@@ -70,12 +70,42 @@ export const docMDXComponents: MDXComponents = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-gray-300 bg-gray-100 px-3 py-2 text-left font-semibold">
+    <th className="border border-gray-300 bg-gray-100 px-3 py-2 text-left font-medium">
       {children}
     </th>
   ),
   td: ({ children }) => (
     <td className="border border-gray-300 px-3 py-2">{children}</td>
+  ),
+  code: ({ children, className, ...props }: React.ComponentProps<'code'>) => {
+    // rehype-pretty-code 코드블록은 data-language 속성을 가짐 → 그대로 통과
+    if ('data-language' in props) {
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    }
+    return (
+      <code className="bg-gray-100 text-orange-600 rounded px-1.5 py-0.5 text-[0.88em]">
+        {children}
+      </code>
+    )
+  },
+  ul: ({ children }) => (
+    <ul className="list-disc pl-6 mb-4 space-y-1.5 text-gray-700">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal pl-6 mb-4 space-y-1.5 text-gray-700">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => (
+    <li className="leading-relaxed [&>ul]:mb-0.5 [&>ol]:mb-0.5 [&>ul]:mt-1.5 [&>ol]:mt-1.5">
+      {children}
+    </li>
   ),
   strong: ({ children }) => (
     <strong className="font-bold text-gray-900">{children}</strong>

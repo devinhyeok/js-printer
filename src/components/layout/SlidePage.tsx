@@ -1,5 +1,6 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { useOverflowDetect } from '@/utils/useOverflowDetect'
 
 export type SlidePageType = 'content' | 'title' | 'two-col' | 'blank'
 
@@ -45,13 +46,19 @@ export function Col({ children }: { children?: ReactNode }) {
 }
 
 export function SlidePage(props: SlidePageProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  useOverflowDetect(ref)
+
   const type = props.type ?? 'content'
 
   switch (type) {
     case 'title':
       return (
         <SlideContext.Provider value="title">
-          <div className="slide flex flex-col items-center justify-center text-center px-20">
+          <div
+            ref={ref}
+            className="slide flex flex-col items-center justify-center text-center px-20"
+          >
             {props.children}
           </div>
         </SlideContext.Provider>
@@ -60,7 +67,7 @@ export function SlidePage(props: SlidePageProps) {
     case 'two-col':
       return (
         <SlideContext.Provider value="two-col">
-          <div className="slide flex flex-col px-16 py-12">
+          <div ref={ref} className="slide flex flex-col px-16 py-12">
             {props.children}
           </div>
         </SlideContext.Provider>
@@ -69,14 +76,16 @@ export function SlidePage(props: SlidePageProps) {
     case 'blank':
       return (
         <SlideContext.Provider value="blank">
-          <div className="slide">{props.children}</div>
+          <div ref={ref} className="slide">
+            {props.children}
+          </div>
         </SlideContext.Provider>
       )
 
     default: // content
       return (
         <SlideContext.Provider value="content">
-          <div className="slide flex flex-col px-16 py-12">
+          <div ref={ref} className="slide flex flex-col px-16 py-12">
             {props.children}
           </div>
         </SlideContext.Provider>

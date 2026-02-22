@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @source "../**/*.{ts,tsx,mdx}";
+@theme {
+  --breakpoint-3xl: 1920px;
+}
 
 /* 배경 그래픽 인쇄 기본값 강제 (Chrome 인쇄 다이얼로그에서 자동 체크) */
 html {
@@ -26,6 +29,7 @@ mjx-container[display='true'] {
   display: block;
   margin: 1rem 0;
   text-align: center;
+  overflow: visible;
 }
 
 /* =====================
@@ -53,9 +57,13 @@ mjx-container[display='true'] {
 }
 
 /* =====================
-   브라우저 미리보기
+   브라우저 미리보기 (paged.js 처리 전 원본)
    ===================== */
 @media screen {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     background: #d1d5db;
     font-family: 'Noto Sans KR', sans-serif;
@@ -67,7 +75,6 @@ mjx-container[display='true'] {
     align-items: center;
     padding: 40px 20px;
     gap: 24px;
-    counter-reset: page-num;
   }
 
   .doc h2,
@@ -78,30 +85,76 @@ mjx-container[display='true'] {
   .doc {
     width: 210mm;
     min-height: 297mm;
-    background: white;
+    background-color: white;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
     padding: 20mm;
     font-size: 11pt;
     color: #1a1a1a;
     box-sizing: border-box;
     position: relative;
-    counter-increment: page-num;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
 
-  .doc::after {
-    content: counter(page-num);
-    position: absolute;
-    bottom: 10mm;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 9pt;
-    color: #9ca3af;
+  .doc > *:first-child {
+    margin-top: 0 !important;
   }
 
-  /* 슬라이드 (16:9 — 브라우저 미리보기용 50% 축소) */
+  .doc[data-overflow]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(297mm - 1px);
+    height: 2px;
+    background: repeating-linear-gradient(
+      to right,
+      rgba(239, 68, 68, 0.5) 0 8px,
+      transparent 8px 16px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .doc[data-overflow]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 297mm;
+    bottom: 0;
+    background: rgba(239, 68, 68, 0.06);
+    pointer-events: none;
+    z-index: 9;
+  }
+
+  .doc-source-hidden {
+    position: fixed;
+    left: -9999px;
+    visibility: hidden;
+  }
+
+  /* =====================
+     paged.js 웹뷰 출력 스타일
+     ===================== */
+  .pagedjs_pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 24px;
+  }
+
+  .pagedjs_page {
+    background: white;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    font-size: 11pt;
+    color: #1a1a1a;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* 슬라이드 (16:9) */
   .slide-wrapper {
     display: flex;
     flex-direction: column;
@@ -111,16 +164,48 @@ mjx-container[display='true'] {
   }
 
   .slide {
-    width: 960px;
-    height: 540px;
+    width: 210mm;
+    min-height: calc(210mm * 9 / 16);
     background: white;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 60px;
+    padding: 32px 48px;
     font-size: 20px;
     color: #1a1a1a;
     box-sizing: border-box;
     position: relative;
-    overflow: hidden;
+  }
+
+  .slide[data-overflow]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(210mm * 9 / 16 - 1px);
+    height: 2px;
+    background: repeating-linear-gradient(
+      to right,
+      rgba(239, 68, 68, 0.5) 0 8px,
+      transparent 8px 16px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .slide[data-overflow]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(210mm * 9 / 16);
+    bottom: 0;
+    background: rgba(239, 68, 68, 0.06);
+    pointer-events: none;
+    z-index: 9;
+  }
+
+  .slide h2,
+  .slide h3 {
+    scroll-margin-top: 40px;
   }
 }
 
@@ -138,33 +223,24 @@ mjx-container[display='true'] {
     -webkit-print-color-adjust: exact;
   }
 
-  .doc-wrapper {
-    display: block;
-    padding: 0;
-    gap: 0;
+  .doc-source-hidden {
+    display: none !important;
   }
 
-  .doc {
-    width: 100%;
-    min-height: auto;
-    padding: 0;
+  .pagedjs_page {
     box-shadow: none;
-    box-sizing: border-box;
   }
 
-  .doc + .doc {
-    break-before: page;
-  }
-
-  .no-break {
-    break-inside: avoid;
+  .pagedjs_page-content > *:first-child,
+  .doc > *:first-child {
+    margin-top: 0 !important;
   }
 
   .print-button {
     display: none !important;
   }
 
-  /* 슬라이드 인쇄 — named page로 A4 가로 강제 적용 */
+  /* 슬라이드 인쇄 — A4 가로 */
   .slide-wrapper {
     display: block;
     padding: 0;

@@ -1,26 +1,39 @@
+import { KPISection } from '@/components/widgets/KPISection'
+
 <DocPage>
 
 ## 소개
 
-JS Printer는 MDX 파일로 문서를 작성하고 브라우저 인쇄 기능으로 A4 PDF를 생성하는 도구입니다. React 컴포넌트를 문서 안에 직접 삽입할 수 있어 차트, 표, 수식, 다이어그램 같은 시각 요소를 자유롭게 배치할 수 있습니다.
+JS Printer는 MDX 파일로 문서를 작성하고 브라우저 인쇄 기능으로 A4 PDF를 생성하는 도구입니다.
+Markdown 문법 안에 React 컴포넌트를 직접 삽입할 수 있어
+차트, 표, 수식, 다이어그램 같은 시각 요소를 자유롭게 배치할 수 있습니다.
+
+<KPISection
+  items={[
+    { label: 'UI 프레임워크', value: 'React 19' },
+    { label: '빌드 도구', value: 'Vite 6' },
+    { label: '출력 형식', value: 'A4', unit: 'PDF' },
+  ]}
+/>
 
 ### 핵심 특징
 
-- **MDX 기반**: Markdown 문법 안에 React 컴포넌트를 직접 삽입합니다.
-- **A4 출력**: CSS로 A4 페이지를 시뮬레이션하며 브라우저 인쇄로 PDF를 생성합니다.
-- **책 단위 관리**: `src/content/` 아래 폴더별로 책을 독립 관리합니다.
-- **책별 스타일**: `theme.tsx`로 책마다 다른 디자인을 적용할 수 있습니다.
+- MDX 기반 작성: Markdown 안에 React 컴포넌트를 직접 삽입합니다.
+- A4 PDF 출력: CSS `@page` 규칙과 브라우저 인쇄 엔진으로 깔끔한 PDF를 생성합니다.
+- 콘텐츠 단위 관리: `src/content/` 아래 폴더별로 콘텐츠를 독립 관리합니다.
+- 콘텐츠별 커스텀 테마: `theme.tsx`로 콘텐츠마다 다른 디자인을 적용할 수 있습니다.
+- 시각화 위젯 내장: KPI 카드, 꺾은선 차트, Mermaid 다이어그램, 수식, QR 코드를 기본 제공합니다.
 
 ### 기술 스택
 
-| 역할 | 기술 |
-| --- | --- |
-| UI | React 19 + TypeScript |
-| 빌드 | Vite 6 |
-| 스타일 | Tailwind CSS v4 |
-| 콘텐츠 | MDX + remark-gfm + remark-math |
-| 차트 | Recharts |
-| 다이어그램 | Mermaid |
-| 수식 | MathJax |
+| 역할            | 기술                                              |
+| --------------- | ------------------------------------------------- |
+| UI              | React 19 + TypeScript                             |
+| 빌드            | Vite 6                                            |
+| 스타일          | Tailwind CSS v4                                   |
+| 콘텐츠          | MDX + remark-gfm + remark-math + remark-directive |
+| 코드 하이라이팅 | Shiki (rehype-pretty-code)                        |
+| 시각화          | Recharts, Mermaid, MathJax, qrcode.react          |
+| PDF 출력        | Paged.js (미리보기) + react-to-print (인쇄)       |
 
 </DocPage>

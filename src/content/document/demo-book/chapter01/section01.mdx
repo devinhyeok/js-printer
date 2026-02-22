@@ -2,9 +2,12 @@ import { FolderTree } from '@/components/widgets/FolderTree'
 
 <DocPage>
 
-## 폴더 구조
+## 문서 작성 가이드
 
-책 하나는 `src/content/` 아래 폴더 하나에 해당합니다. 폴더를 추가하면 책 선택 화면에 자동으로 표시됩니다.
+### 프로젝트 구조
+
+문서와 프레젠테이션은 `src/content/` 아래에 각각 독립된 폴더로 관리합니다.
+폴더 하나가 콘텐츠 하나에 해당하며, 카탈로그에 등록하면 선택 목록에 표시됩니다.
 
 <FolderTree
   items={[
@@ -13,28 +16,43 @@ import { FolderTree } from '@/components/widgets/FolderTree'
       type: 'folder',
       children: [
         {
-          name: 'my-book/',
+          name: 'document/',
           type: 'folder',
           children: [
+            { name: 'catalog.ts', type: 'file', note: '문서 카탈로그' },
             {
-              name: 'index.mdx',
-              type: 'file',
-              note: '책 전체 조립 (import 순서로 페이지 순서 결정)',
-            },
-            { name: 'cover.tsx', type: 'file', note: '표지 (TSX)' },
-            {
-              name: 'theme.tsx',
-              type: 'file',
-              note: '선택. 이 책만의 커스텀 스타일',
-            },
-            { name: 'intro.mdx', type: 'file', note: '소개 페이지' },
-            {
-              name: 'chapter01/',
+              name: 'my-book/',
               type: 'folder',
               children: [
-                { name: 'index.mdx', type: 'file', note: '챕터 조립' },
-                { name: 'section01.mdx', type: 'file' },
-                { name: 'section02.mdx', type: 'file' },
+                { name: 'index.mdx', type: 'file', note: '콘텐츠 조립 (import 순서 = 페이지 순서)' },
+                { name: 'cover.mdx', type: 'file', note: '표지' },
+                { name: 'theme.tsx', type: 'file', note: '(선택) 커스텀 스타일' },
+                { name: 'intro.mdx', type: 'file', note: '소개 페이지' },
+                {
+                  name: 'chapter01/',
+                  type: 'folder',
+                  children: [
+                    { name: 'index.mdx', type: 'file', note: '챕터 조립' },
+                    { name: 'section01.mdx', type: 'file' },
+                    { name: 'section02.mdx', type: 'file' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'presentation/',
+          type: 'folder',
+          children: [
+            { name: 'catalog.ts', type: 'file', note: '슬라이드 카탈로그' },
+            {
+              name: 'my-slide/',
+              type: 'folder',
+              children: [
+                { name: 'index.mdx', type: 'file', note: '슬라이드 조립' },
+                { name: 'cover.tsx', type: 'file', note: '표지 (TSX)' },
+                { name: 'slide01.mdx', type: 'file' },
               ],
             },
           ],
@@ -44,22 +62,53 @@ import { FolderTree } from '@/components/widgets/FolderTree'
   ]}
 />
 
-### 페이지 단위 작성
+</DocPage>
 
-`<DocPage>` 블록 하나가 A4 한 페이지로 렌더링됩니다.
-
-```mdx
 <DocPage>
 
-## 1장. 제목
+### 카탈로그 등록
 
-본문 내용을 작성합니다.
+`catalog.ts`에 등록해야 선택 목록에 표시됩니다. `id`는 콘텐츠 폴더명과 일치해야 합니다.
 
-</DocPage>
+```ts
+// src/content/document/catalog.ts
+import type { CatalogItem } from '../catalog-types'
+
+export const catalog: CatalogItem[] = [
+  // 폴더 없이 등록하면 최상단에 바로 표시
+  { id: 'my-book', label: '내 문서' },
+
+  // 폴더로 그룹핑하면 접을 수 있는 트리 구조
+  {
+    folder: '예제',
+    children: [
+      { id: 'demo-book', label: 'JS Printer 설명서' },
+    ],
+  },
+]
+```
+
+- `id`는 콘텐츠 폴더명과 일치해야 합니다.
+- `label`은 선택 목록에 표시될 이름입니다 (생략 시 `id`가 표시됨).
+- 배열 순서가 곧 표시 순서입니다.
+
+카탈로그 타입 정의는 다음과 같습니다.
+
+```ts
+// catalog-types.ts
+interface BookItem {
+  id: string
+  label?: string
+}
+interface FolderItem {
+  folder: string
+  children: BookItem[]
+}
+type CatalogItem = BookItem | FolderItem
 ```
 
 :::note
-`DocPage` 안에서만 A4 크기와 그림자, 페이지 번호가 적용됩니다.
+프레젠테이션도 동일하게 `src/content/presentation/catalog.ts`에 등록합니다.
 :::
 
 </DocPage>

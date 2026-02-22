@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Menu } from 'lucide-react'
+import { PanelRight } from 'lucide-react'
+import { collectHeadings } from '@/utils/collectHeadings'
 
 interface Heading {
   text: string
@@ -12,47 +13,90 @@ export function FloatingNav() {
   const [headings, setHeadings] = useState<Heading[]>([])
   const [open, setOpen] = useState(true)
   const [activeIdx, setActiveIdx] = useState<number>(-1)
+  const [loading, setLoading] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const collect = () => {
-      const allDocs = Array.from(document.querySelectorAll('.doc-wrapper .doc'))
+    const collect = (done?: () => void) => {
+      const docRaw = collectHeadings('.doc-wrapper .doc')
+      const slideRaw = collectHeadings('.slide-wrapper .slide')
+      const raw = docRaw.length > 0 ? docRaw : slideRaw
       const result: Heading[] = []
-      allDocs.forEach((docEl, docIdx) => {
-        const pageNum = docIdx + 1
-        docEl.querySelectorAll('h2, h3').forEach((el) => {
-          result.push({
-            text: el.textContent ?? '',
-            level: el.tagName === 'H2' ? 2 : 3,
-            page: pageNum,
-            el,
-          })
+
+      const isDoc = docRaw.length > 0
+      const pages = Array.from(
+        document.querySelectorAll(
+          isDoc ? '.doc-wrapper .doc' : '.slide-wrapper .slide',
+        ),
+      )
+
+      pages.forEach((el, idx) => {
+        const hasHeadings = el.querySelector('h2, h3')
+        if (isDoc && el.classList.contains('doc-cover')) {
+          result.push({ text: '커버', level: 2, page: idx + 1, el })
+        } else if (isDoc && !hasHeadings && el.textContent?.includes('목차')) {
+          result.push({ text: '목차', level: 2, page: idx + 1, el })
+        } else if (!isDoc && idx === 0 && !hasHeadings) {
+          result.push({ text: '커버', level: 2, page: 1, el })
+        }
+      })
+
+      raw.forEach((h) => {
+        result.push({
+          text: h.text,
+          level: h.tag === 'H2' ? 2 : 3,
+          page: h.page,
+          el: h.el,
         })
       })
       setHeadings(result)
+      done?.()
     }
     collect()
     const t = setTimeout(collect, 300)
-    return () => clearTimeout(t)
+
+    // 콘텐츠 전환 시 이전 목차 유지 → 새 헤딩 수집 완료 후 교체
+    let navTimer: ReturnType<typeof setTimeout>
+    const onNav = () => {
+      setActiveIdx(-1)
+      setLoading(true)
+      clearTimeout(navTimer)
+      navTimer = setTimeout(() => collect(() => setLoading(false)), 350)
+    }
+    window.addEventListener('popstate', onNav)
+
+    return () => {
+      clearTimeout(t)
+      clearTimeout(navTimer)
+      window.removeEventListener('popstate', onNav)
+    }
   }, [])
 
-  // 마지막 헤딩이 threshold를 통과할 수 있도록 doc-wrapper 하단 여백을 동적으로 계산
   useEffect(() => {
     if (headings.length === 0) return
 
-    const THRESHOLD = 124
-    const wrapper = document.querySelector<HTMLElement>('.doc-wrapper')
+    const slideWrap = document.querySelector<HTMLElement>('.slide-wrapper')
+    const wrapper =
+      document.querySelector<HTMLElement>('.doc-wrapper') ?? slideWrap
+    const threshold = slideWrap ? 44 : 124
 
     const applyPadding = () => {
       if (!wrapper) return
+
+      // Reset to default padding to measure natural layout
+      wrapper.style.paddingBottom = '40px'
+
       const lastEl = headings[headings.length - 1].el as HTMLElement
-      const lastAbsTop = lastEl.getBoundingClientRect().top + window.scrollY
-      const needed =
-        lastAbsTop -
-        THRESHOLD -
-        (document.documentElement.scrollHeight - window.innerHeight)
-      wrapper.style.paddingBottom =
-        needed > 0 ? `${Math.ceil(needed) + 40}px` : '40px'
+      const lastRect = lastEl.getBoundingClientRect()
+      const wrapperRect = wrapper.getBoundingClientRect()
+
+      const requiredSpaceBelow = window.innerHeight - threshold
+      const currentSpaceBelow = wrapperRect.bottom - lastRect.top
+      const extraPadding = requiredSpaceBelow - currentSpaceBelow
+
+      if (extraPadding > 0) {
+        wrapper.style.paddingBottom = `${40 + Math.ceil(extraPadding)}px`
+      }
     }
 
     applyPadding()
@@ -66,14 +110,14 @@ export function FloatingNav() {
   useEffect(() => {
     if (headings.length === 0) return
 
-    // scroll-margin-top(120px)에 약간의 여유를 더한 기준선
-    const THRESHOLD = 124
+    const isSlide = !!document.querySelector('.slide-wrapper')
+    const threshold = isSlide ? 44 : 124
 
     const measure = () => {
       let found = -1
       for (let i = headings.length - 1; i >= 0; i--) {
         const rect = (headings[i].el as HTMLElement).getBoundingClientRect()
-        if (rect.top <= THRESHOLD) {
+        if (rect.top <= threshold) {
           found = i
           break
         }
@@ -117,44 +161,50 @@ export function FloatingNav() {
         onClick={() => setOpen(true)}
         title="목차"
       >
-        <Menu size={18} />
+        <PanelRight size={18} />
       </button>
     )
   }
 
-  // h2 항목에 순서 번호 부여
   let chapterIdx = 0
 
   return (
-    <div className="print-button fixed top-4 right-4 z-50 w-56">
+    <div className="print-button fixed top-4 right-4 z-50 w-56 xl:w-64 2xl:w-100 3xl:w-120 transition-all duration-300">
       <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
             목차
           </span>
-          <button
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            onClick={() => setOpen(false)}
-          >
-            <Menu size={14} />
-          </button>
+          <div className="flex items-center gap-2">
+            {loading && (
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-200 border-t-blue-400 animate-spin" />
+            )}
+            <button
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              <PanelRight size={14} />
+            </button>
+          </div>
         </div>
 
-        <div ref={navRef} className="max-h-[75vh] overflow-y-auto pt-3">
+        <div
+          ref={navRef}
+          className={`max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto py-2 transition-opacity duration-150 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
+        >
           {headings.map((h, i) => {
             const isActive = i === activeIdx
             if (h.level === 2) {
               chapterIdx++
-              const n = String(chapterIdx).padStart(2, '0')
               return (
                 <div key={i}>
                   {chapterIdx > 1 && (
-                    <div className="mx-4 mt-4 mb-4 border-t border-gray-100" />
+                    <div className="mx-4 my-2 border-t border-gray-100" />
                   )}
                   <button
                     data-nav-idx={i}
-                    className={`w-full text-left px-4 py-2 transition-colors flex items-center gap-2 ${
-                      isActive ? 'bg-blue-50' : 'hover:text-blue-800'
+                    className={`w-full text-left px-4 py-1.5 transition-colors flex items-center gap-2 ${
+                      isActive ? 'bg-blue-50' : 'hover:bg-gray-50'
                     }`}
                     onClick={() =>
                       h.el.scrollIntoView({
@@ -164,17 +214,12 @@ export function FloatingNav() {
                     }
                   >
                     <span
-                      className={`shrink-0 text-sm font-semibold ${isActive ? 'text-blue-700' : 'text-blue-600'}`}
-                    >
-                      {n}.
-                    </span>
-                    <span
-                      className={`text-sm font-semibold truncate flex-1 ${isActive ? 'text-blue-700' : 'text-blue-600'}`}
+                      className={`text-xs font-semibold truncate flex-1 ${isActive ? 'text-blue-700' : 'text-gray-800'}`}
                     >
                       {h.text}
                     </span>
                     <span
-                      className={`shrink-0 text-[10px] font-bold ml-1 ${isActive ? 'text-blue-500' : 'text-blue-300'}`}
+                      className={`shrink-0 text-[10px] font-bold ml-1 ${isActive ? 'text-blue-500' : 'text-gray-300'}`}
                     >
                       {String(h.page).padStart(3, '0')}
                     </span>
@@ -204,7 +249,7 @@ export function FloatingNav() {
               </button>
             )
           })}
-          <div className="h-3" />
+          <div className="h-2" />
         </div>
       </div>
     </div>

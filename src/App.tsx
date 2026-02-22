@@ -3,6 +3,7 @@ import './styles/global.css'
 import { ContentSelector, type ContentType } from './views/ContentSelector'
 import { DocViewer } from './views/DocViewer'
 import { SlideViewer } from './views/SlideViewer'
+import { ViewerShell } from './components/layout/ViewerShell'
 
 interface Selection {
   id: string
@@ -39,10 +40,18 @@ function App() {
   }
 
   if (selected.type === 'slide') {
-    return <SlideViewer slideId={selected.id} />
+    return (
+      <ViewerShell type="slide">
+        <SlideViewer slideId={selected.id} />
+      </ViewerShell>
+    )
   }
 
-  return <DocViewer docId={selected.id} />
+  return (
+    <ViewerShell type="doc">
+      <DocViewer docId={selected.id} />
+    </ViewerShell>
+  )
 }
 
 export default App

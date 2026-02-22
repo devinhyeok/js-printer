@@ -11,17 +11,29 @@ interface FlatBook {
   id: string
   label: string
   type: ContentType
+  uiKey: string
 }
 
 function flattenBooks(items: CatalogItem[], type: ContentType): FlatBook[] {
   const result: FlatBook[] = []
+  let idx = 0
   for (const item of items) {
     if (isFolder(item)) {
       for (const child of item.children) {
-        result.push({ id: child.id, label: child.label ?? child.id, type })
+        result.push({
+          id: child.id,
+          label: child.label ?? child.id,
+          type,
+          uiKey: `${type}-${idx++}`,
+        })
       }
     } else {
-      result.push({ id: item.id, label: item.label ?? item.id, type })
+      result.push({
+        id: item.id,
+        label: item.label ?? item.id,
+        type,
+        uiKey: `${type}-${idx++}`,
+      })
     }
   }
   return result
@@ -39,7 +51,6 @@ function getCurrentId(): string {
   return new URLSearchParams(window.location.search).get('id') ?? ''
 }
 
-// 검색어와 매칭되는 책 목록을 평탄화해서 반환
 function getSearchResults(query: string): FlatBook[] {
   const q = query.toLowerCase()
   const all = [
@@ -54,12 +65,21 @@ function getSearchResults(query: string): FlatBook[] {
 interface BookRowProps {
   book: BookItem
   type: ContentType
-  currentId: string
+  uiKey: string
+  activeKey: string
+  onSelect: (uiKey: string) => void
   indent?: boolean
 }
 
-function BookRow({ book, type, currentId, indent }: BookRowProps) {
-  const isActive = book.id === currentId
+function BookRow({
+  book,
+  type,
+  uiKey,
+  activeKey,
+  onSelect,
+  indent,
+}: BookRowProps) {
+  const isActive = uiKey === activeKey
   const label = book.label ?? book.id
   return (
     <button
@@ -72,7 +92,10 @@ function BookRow({ book, type, currentId, indent }: BookRowProps) {
             : 'bg-indigo-50'
           : 'hover:bg-gray-50'
       }`}
-      onClick={() => navigate(book.id, type)}
+      onClick={() => {
+        onSelect(uiKey)
+        navigate(book.id, type)
+      }}
     >
       <span
         className={`text-xs truncate flex-1 ${
@@ -101,14 +124,17 @@ function BookRow({ book, type, currentId, indent }: BookRowProps) {
 interface SectionTreeProps {
   items: CatalogItem[]
   type: ContentType
-  currentId: string
+  activeKey: string
+  onSelect: (uiKey: string) => void
 }
 
-function SectionTree({ items, type, currentId }: SectionTreeProps) {
+function SectionTree({ items, type, activeKey, onSelect }: SectionTreeProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
   const toggle = (key: string) =>
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
+
+  let idx = 0
 
   return (
     <div className="flex flex-col gap-0.5">
@@ -138,26 +164,34 @@ function SectionTree({ items, type, currentId }: SectionTreeProps) {
                     borderLeft: '1px solid #e5e7eb',
                   }}
                 >
-                  {item.children.map((child) => (
-                    <BookRow
-                      key={child.id}
-                      book={child}
-                      type={type}
-                      currentId={currentId}
-                      indent
-                    />
-                  ))}
+                  {item.children.map((child) => {
+                    const uiKey = `${type}-${idx++}`
+                    return (
+                      <BookRow
+                        key={uiKey}
+                        book={child}
+                        type={type}
+                        uiKey={uiKey}
+                        activeKey={activeKey}
+                        onSelect={onSelect}
+                        indent
+                      />
+                    )
+                  })}
                 </div>
               )}
             </div>
           )
         }
+        const uiKey = `${type}-${idx++}`
         return (
           <BookRow
-            key={item.id}
+            key={uiKey}
             book={item}
             type={type}
-            currentId={currentId}
+            uiKey={uiKey}
+            activeKey={activeKey}
+            onSelect={onSelect}
           />
         )
       })}
@@ -165,14 +199,36 @@ function SectionTree({ items, type, currentId }: SectionTreeProps) {
   )
 }
 
+function findFirstUiKey(id: string): string {
+  const all = [
+    ...flattenBooks(docCatalog, 'doc'),
+    ...flattenBooks(slideCatalog, 'slide'),
+  ]
+  return all.find((b) => b.id === id)?.uiKey ?? ''
+}
+
 export function BookSwitcher() {
   const [open, setOpen] = useState(true)
   const [query, setQuery] = useState('')
-  const [currentId, setCurrentId] = useState(getCurrentId)
+  const [activeKey, setActiveKey] = useState(() =>
+    findFirstUiKey(getCurrentId()),
+  )
   const inputRef = useRef<HTMLInputElement>(null)
+  const selfNavigated = useRef(false)
+
+  const handleSelect = (uiKey: string) => {
+    selfNavigated.current = true
+    setActiveKey(uiKey)
+  }
 
   useEffect(() => {
-    const onPopState = () => setCurrentId(getCurrentId())
+    const onPopState = () => {
+      if (selfNavigated.current) {
+        selfNavigated.current = false
+        return
+      }
+      setActiveKey(findFirstUiKey(getCurrentId()))
+    }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
@@ -196,9 +252,8 @@ export function BookSwitcher() {
   const searchResults = isSearching ? getSearchResults(query) : []
 
   return (
-    <div className="print-button fixed top-4 left-4 z-50 w-56">
+    <div className="print-button fixed top-4 left-4 z-50 w-56 xl:w-64 2xl:w-100 3xl:w-120 transition-all duration-300">
       <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        {/* 헤더 */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
             콘텐츠
@@ -211,7 +266,6 @@ export function BookSwitcher() {
           </button>
         </div>
 
-        {/* 검색창 */}
         <div className="px-3 py-2 border-b border-gray-100">
           <input
             ref={inputRef}
@@ -223,17 +277,18 @@ export function BookSwitcher() {
           />
         </div>
 
-        {/* 트리 / 검색 결과 */}
-        <div className="max-h-[60vh] overflow-y-auto px-2 py-2">
+        <div className="max-h-[50vh] md:max-h-[60vh] xl:max-h-[75vh] overflow-y-auto px-2 py-2">
           {isSearching ? (
             searchResults.length > 0 ? (
               <div className="flex flex-col gap-0.5">
                 {searchResults.map((b) => (
                   <BookRow
-                    key={`${b.type}-${b.id}`}
+                    key={b.uiKey}
                     book={{ id: b.id, label: b.label }}
                     type={b.type}
-                    currentId={currentId}
+                    uiKey={b.uiKey}
+                    activeKey={activeKey}
+                    onSelect={handleSelect}
                   />
                 ))}
               </div>
@@ -252,7 +307,8 @@ export function BookSwitcher() {
                   <SectionTree
                     items={docCatalog}
                     type="doc"
-                    currentId={currentId}
+                    activeKey={activeKey}
+                    onSelect={handleSelect}
                   />
                 </div>
               )}
@@ -264,7 +320,8 @@ export function BookSwitcher() {
                   <SectionTree
                     items={slideCatalog}
                     type="slide"
-                    currentId={currentId}
+                    activeKey={activeKey}
+                    onSelect={handleSelect}
                   />
                 </div>
               )}
