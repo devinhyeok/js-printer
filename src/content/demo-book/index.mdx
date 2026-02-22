@@ -1,6 +1,32 @@
+import Cover from './cover.mdx'
 import Intro from './intro.mdx'
 import Chapter01 from './chapter01/index.mdx'
 import Chapter02 from './chapter02/index.mdx'
+
+<Cover />
+
+<TOC
+  items={[
+    { title: '소개', page: 2 },
+    {
+      title: '문서 작성법',
+      page: 3,
+      children: [
+        { title: '폴더 구조 & 페이지 단위', page: 3 },
+        { title: '책별 스타일 & 목차', page: 4 },
+      ],
+    },
+    {
+      title: '시각화 요소',
+      page: 5,
+      children: [
+        { title: 'KPI · 콜아웃', page: 5 },
+        { title: '차트 · 다이어그램', page: 6 },
+        { title: '수식 · 코드 · QR', page: 7 },
+      ],
+    },
+  ]}
+/>
 
 <Intro />
 <Chapter01 />

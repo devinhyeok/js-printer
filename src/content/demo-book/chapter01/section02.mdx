@@ -1,11 +1,36 @@
 <div className="page">
 
-## 3장. 분기별 실적
+## 책별 스타일 커스터마이징
 
-| 분기  | 매출      | 전분기 대비 |
-| ----- | --------- | ----------- |
-| 1분기 | 1,400만원 | -           |
-| 2분기 | 1,840만원 | +31%        |
-| 3분기 | 2,620만원 | +42%        |
+`components.tsx`가 있으면 해당 책에만 커스텀 MDX 컴포넌트가 적용됩니다. 없으면 기본 스타일이 사용됩니다.
+
+```tsx
+// src/content/my-book/components.tsx
+import { mdxComponents as defaults } from '../../components/mdx/MDXComponents'
+
+export const mdxComponents = {
+  ...defaults,
+  h2: ({ children }) => (
+    <h2 style={{ color: '#7c3aed' }}>{children}</h2>
+  ),
+}
+```
+
+### 목차 작성
+
+`index.mdx` 상단에 `<TOC />` 컴포넌트를 배치합니다. 페이지 번호는 수동으로 입력합니다.
+
+```mdx
+<TOC items={[
+  { title: '1장. 소개', page: 2 },
+  { title: '2장. 사용법', page: 3, children: [
+    { title: '2.1 폴더 구조', page: 3 },
+  ]},
+]} />
+```
+
+:::tip
+콘텐츠가 확정된 후 실제 페이지 번호를 확인하고 TOC를 마지막에 업데이트하는 것을 권장합니다.
+:::
 
 </div>

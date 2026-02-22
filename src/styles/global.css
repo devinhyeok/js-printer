@@ -2,6 +2,44 @@
 @source "../**/*.{ts,tsx,mdx}";
 
 /* =====================
+   Mermaid 다이어그램
+   ===================== */
+.mermaid-wrap .edgeLabel span {
+  color: #111827 !important;
+  background: none !important;
+}
+
+/* =====================
+   수식 (MathJax)
+   ===================== */
+mjx-container {
+  overflow-x: auto;
+}
+
+mjx-container[display='true'] {
+  display: block;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+/* =====================
+   코드블록 (rehype-pretty-code)
+   ===================== */
+[data-rehype-pretty-code-figure] {
+  margin: 1rem 0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+[data-rehype-pretty-code-figure] pre {
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+/* =====================
    브라우저 미리보기
    ===================== */
 @media screen {

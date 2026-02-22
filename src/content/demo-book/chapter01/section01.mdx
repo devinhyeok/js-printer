@@ -1,21 +1,38 @@
-import { ChartSection } from '../../../components/sections/ChartSection'
-
 <div className="page">
 
-## 2장. 데이터 분석
+## 폴더 구조
 
-월별 추이를 분석한 결과, 3분기부터 성장세가 두드러지게 나타났습니다.
+책 하나는 `src/content/` 아래 폴더 하나에 해당합니다. 폴더를 추가하면 책 선택 화면에 자동으로 표시됩니다.
 
-<ChartSection
-  title="월별 매출 추이"
-  data={[
-    { name: '1월', value: 400 },
-    { name: '2월', value: 520 },
-    { name: '3월', value: 480 },
-    { name: '4월', value: 610 },
-    { name: '5월', value: 730 },
-    { name: '6월', value: 890 },
-  ]}
-/>
+```
+src/content/
+└── 책이름/
+    ├── index.mdx          ← 책 전체 조립 (import 순서로 페이지 순서 결정)
+    ├── components.tsx     ← 선택. 이 책만의 커스텀 스타일
+    ├── cover.mdx          ← 표지
+    ├── intro.mdx          ← 소개 페이지
+    └── chapter01/
+        ├── index.mdx      ← 챕터 조립
+        ├── section01.mdx
+        └── section02.mdx
+```
+
+### 페이지 단위 작성
+
+`<div className="page">` 블록 하나가 A4 한 페이지로 렌더링됩니다.
+
+```mdx
+<div className="page">
+
+## 1장. 제목
+
+본문 내용을 작성합니다.
+
+</div>
+```
+
+:::note
+`page` 클래스 안에서만 A4 크기와 그림자, 페이지 번호가 적용됩니다.
+:::
 
 </div>
