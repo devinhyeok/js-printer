@@ -11,7 +11,7 @@ export function DocLayout({ children }: DocLayoutProps) {
     <>
       <style>{`@page { size: A4; margin: 20mm; }`}</style>
       <button
-        className="print-button fixed top-4 right-4 z-50 rounded-full bg-white p-2.5 shadow-md border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 active:scale-95 transition-all"
+        className="print-button fixed top-4 left-4 z-50 rounded-full bg-white p-2.5 shadow-md border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 active:scale-95 transition-all"
         onClick={() => window.history.back()}
         title="홈으로"
       >
