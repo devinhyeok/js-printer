@@ -1,0 +1,45 @@
+---
+description: 터미널 명령어 실행 및 출력 시 한글 인코딩 이슈 방지를 위한 필수 규칙
+globs: '**/*'
+alwaysApply: true
+---
+
+## 터미널 명령어 가이드라인
+
+### 인코딩 이슈 해결 방안
+
+Cursor 통합 터미널의 한글 인코딩 문제로 인해 다음 규칙을 준수해야 합니다:
+
+- **모든 터미널 명령어와 출력은 반드시 영어만 사용해야 합니다.**
+- **이모지(Emoji) 및 비표준 특수문자는 절대 사용하지 마세요.**
+- 다음 항목에 절대 한글이나 특수문자를 사용하지 마세요:
+  - `Write-Output` 메시지
+  - `echo` 명령어 내용
+  - 변수명
+  - 파일 설명
+  - PowerShell 스크립트 내의 주석
+
+### 올바른 예시
+
+```powershell
+# Good - English only
+Write-Output "config: 6 files, 0 MB"
+Write-Output "Total: 244 files"
+foreach ($folder in @("config", "env")) {
+    Write-Output "$folder : OK"
+}
+```
+
+### 잘못된 예시
+
+```powershell
+# Bad - Korean characters will break
+Write-Output "config: 6개 파일, 0 MB"
+Write-Output "총: 244개 파일"
+```
+
+### 응답 형식
+
+- 사용자에게 보내는 텍스트 응답(설명)은 **한국어**로 작성해도 됩니다.
+- 단, **터미널 명령어의 출력 결과**는 반드시 **영어**여야 합니다.
+- 파일 개수, 크기, 상태 등은 영어 약어를 사용하세요.
