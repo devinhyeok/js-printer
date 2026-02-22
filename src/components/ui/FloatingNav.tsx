@@ -36,6 +36,33 @@ export function FloatingNav() {
     return () => clearTimeout(t)
   }, [])
 
+  // 마지막 헤딩이 threshold를 통과할 수 있도록 doc-wrapper 하단 여백을 동적으로 계산
+  useEffect(() => {
+    if (headings.length === 0) return
+
+    const THRESHOLD = 124
+    const wrapper = document.querySelector<HTMLElement>('.doc-wrapper')
+
+    const applyPadding = () => {
+      if (!wrapper) return
+      const lastEl = headings[headings.length - 1].el as HTMLElement
+      const lastAbsTop = lastEl.getBoundingClientRect().top + window.scrollY
+      const needed =
+        lastAbsTop -
+        THRESHOLD -
+        (document.documentElement.scrollHeight - window.innerHeight)
+      wrapper.style.paddingBottom =
+        needed > 0 ? `${Math.ceil(needed) + 40}px` : '40px'
+    }
+
+    applyPadding()
+    window.addEventListener('resize', applyPadding)
+    return () => {
+      window.removeEventListener('resize', applyPadding)
+      if (wrapper) wrapper.style.paddingBottom = ''
+    }
+  }, [headings])
+
   useEffect(() => {
     if (headings.length === 0) return
 
@@ -43,28 +70,12 @@ export function FloatingNav() {
     const THRESHOLD = 124
 
     const measure = () => {
-      const scrollY = window.scrollY
-      const winH = window.innerHeight
-      const docH = document.documentElement.scrollHeight
-      const isAtBottom = scrollY + winH >= docH - 50
-
       let found = -1
-      if (isAtBottom) {
-        // 하단에 도달했을 때: 뷰포트 안에 있는 마지막 헤딩을 활성화
-        for (let i = headings.length - 1; i >= 0; i--) {
-          const rect = (headings[i].el as HTMLElement).getBoundingClientRect()
-          if (rect.top < winH) {
-            found = i
-            break
-          }
-        }
-      } else {
-        for (let i = headings.length - 1; i >= 0; i--) {
-          const rect = (headings[i].el as HTMLElement).getBoundingClientRect()
-          if (rect.top <= THRESHOLD) {
-            found = i
-            break
-          }
+      for (let i = headings.length - 1; i >= 0; i--) {
+        const rect = (headings[i].el as HTMLElement).getBoundingClientRect()
+        if (rect.top <= THRESHOLD) {
+          found = i
+          break
         }
       }
       setActiveIdx(found)
