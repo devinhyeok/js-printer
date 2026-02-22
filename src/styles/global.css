@@ -37,6 +37,13 @@ mjx-container[display='true'] {
   overflow-x: auto;
   font-size: 0.8125rem;
   line-height: 1.6;
+  font-family:
+    'JetBrains Mono', 'D2Coding', 'Fira Code', 'Consolas', 'Noto Sans KR',
+    monospace;
+}
+
+[data-rehype-pretty-code-figure] code {
+  font-family: inherit;
 }
 
 /* =====================

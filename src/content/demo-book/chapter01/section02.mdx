@@ -10,9 +10,7 @@ import { mdxComponents as defaults } from '../../components/mdx/MDXComponents'
 
 export const mdxComponents = {
   ...defaults,
-  h2: ({ children }) => (
-    <h2 style={{ color: '#7c3aed' }}>{children}</h2>
-  ),
+  h2: ({ children }) => <h2 style={{ color: '#7c3aed' }}>{children}</h2>,
 }
 ```
 
@@ -21,12 +19,16 @@ export const mdxComponents = {
 `index.mdx` 상단에 `<TOC />` 컴포넌트를 배치합니다. 페이지 번호는 수동으로 입력합니다.
 
 ```mdx
-<TOC items={[
-  { title: '1장. 소개', page: 2 },
-  { title: '2장. 사용법', page: 3, children: [
-    { title: '2.1 폴더 구조', page: 3 },
-  ]},
-]} />
+<TOC
+  items={[
+    { title: '1장. 소개', page: 2 },
+    {
+      title: '2장. 사용법',
+      page: 3,
+      children: [{ title: '2.1 폴더 구조', page: 3 }],
+    },
+  ]}
+/>
 ```
 
 :::tip

@@ -1,21 +1,56 @@
+import { FolderTree } from '@/components/mdx/FolderTree'
+
 <div className="page">
 
 ## 폴더 구조
 
 책 하나는 `src/content/` 아래 폴더 하나에 해당합니다. 폴더를 추가하면 책 선택 화면에 자동으로 표시됩니다.
 
-```
-src/content/
-└── 책이름/
-    ├── index.mdx          ← 책 전체 조립 (import 순서로 페이지 순서 결정)
-    ├── components.tsx     ← 선택. 이 책만의 커스텀 스타일
-    ├── cover.mdx          ← 표지
-    ├── intro.mdx          ← 소개 페이지
-    └── chapter01/
-        ├── index.mdx      ← 챕터 조립
-        ├── section01.mdx
-        └── section02.mdx
-```
+<FolderTree
+  items={[
+    {
+      name: 'src/content/',
+      type: 'folder',
+      children: [
+        {
+          name: 'my-book/',
+          type: 'folder',
+          children: [
+            {
+              name: 'index.mdx',
+              type: 'file',
+              note: '책 전체 조립 (import 순서로 페이지 순서 결정)',
+            },
+            {
+              name: 'components.tsx',
+              type: 'file',
+              note: '선택. 이 책만의 커스텀 스타일',
+            },
+            { name: 'cover.mdx', type: 'file', note: '표지' },
+            { name: 'intro.mdx', type: 'file', note: '소개 페이지' },
+            {
+              name: 'chapter01/',
+              type: 'folder',
+              children: [
+                { name: 'index.mdx', type: 'file', note: '챕터 조립' },
+                { name: 'section01.mdx', type: 'file' },
+                { name: 'section02.mdx', type: 'file' },
+              ],
+            },
+            {
+              name: 'chapter02/',
+              type: 'folder',
+              children: [
+                { name: 'index.mdx', type: 'file', note: '챕터 조립' },
+                { name: 'section01.mdx', type: 'file' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ]}
+/>
 
 ### 페이지 단위 작성
 
