@@ -1,0 +1,40 @@
+import { FolderTree } from '@/components/widgets/FolderTree'
+
+<SlidePage>
+
+## 폴더 구조
+
+<FolderTree
+  items={[
+    {
+      name: 'src/content/',
+      type: 'folder',
+      children: [
+        {
+          name: 'document/',
+          type: 'folder',
+          children: [
+            {
+              name: 'my-book/',
+              type: 'folder',
+              children: [{ name: 'index.mdx', type: 'file' }],
+            },
+          ],
+        },
+        {
+          name: 'presentation/',
+          type: 'folder',
+          children: [
+            {
+              name: 'my-slides/',
+              type: 'folder',
+              children: [{ name: 'index.mdx', type: 'file' }],
+            },
+          ],
+        },
+      ],
+    },
+  ]}
+/>
+
+</SlidePage>

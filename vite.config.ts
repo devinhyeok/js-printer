@@ -6,7 +6,7 @@ import mdx from '@mdx-js/rollup'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import remarkDirective from 'remark-directive'
-import rehypeMathjax from 'rehype-mathjax'
+import rehypeMathjax from 'rehype-mathjax/chtml'
 import rehypePrettyCode from 'rehype-pretty-code'
 import { visit } from 'unist-util-visit'
 
@@ -45,6 +45,9 @@ function remarkCallout() {
 }
 
 export default defineConfig({
+  server: {
+    open: true,
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -55,7 +58,7 @@ export default defineConfig({
     mdx({
       remarkPlugins: [remarkGfm, remarkMath, remarkDirective, remarkCallout],
       rehypePlugins: [
-        rehypeMathjax,
+        [rehypeMathjax, { chtml: { fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2' } }],
         rehypeMermaid,
         [rehypePrettyCode, { theme: 'github-light' }],
       ],

@@ -59,7 +59,7 @@ function TreeItem({ node }: { node: TreeNode }) {
         )}
 
         <span
-          className={`text-sm ${isFolder ? 'font-semibold text-gray-800' : 'text-gray-600'}`}
+          className="text-sm text-gray-700"
           style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
         >
           {node.name}

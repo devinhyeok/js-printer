@@ -1,24 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './styles/global.css'
-import { BookSelector } from './views/BookSelector'
-import { BookReport } from './views/BookReport'
+import { ContentSelector, type ContentType } from './views/ContentSelector'
+import { DocViewer } from './views/DocViewer'
+import { SlideViewer } from './views/SlideViewer'
+
+interface Selection {
+  id: string
+  type: ContentType
+}
+
+function parseUrlSelection(): Selection | null {
+  const params = new URLSearchParams(window.location.search)
+  const id = params.get('id')
+  const type = params.get('type') as ContentType | null
+  if (id && (type === 'doc' || type === 'slide')) return { id, type }
+  return null
+}
 
 function App() {
-  const urlBook = new URLSearchParams(window.location.search).get('book')
-  const [selectedBook, setSelectedBook] = useState<string | null>(urlBook)
+  const [selected, setSelected] = useState<Selection | null>(parseUrlSelection)
 
-  const handleSelect = (bookId: string) => {
+  useEffect(() => {
+    const onPopState = () => setSelected(parseUrlSelection())
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  const handleSelect = (id: string, type: ContentType) => {
     const url = new URL(window.location.href)
-    url.searchParams.set('book', bookId)
+    url.searchParams.set('id', id)
+    url.searchParams.set('type', type)
     window.history.pushState({}, '', url)
-    setSelectedBook(bookId)
+    setSelected({ id, type })
   }
 
-  if (!selectedBook) {
-    return <BookSelector onSelect={handleSelect} />
+  if (!selected) {
+    return <ContentSelector onSelect={handleSelect} />
   }
 
-  return <BookReport bookId={selectedBook} />
+  if (selected.type === 'slide') {
+    return <SlideViewer slideId={selected.id} />
+  }
+
+  return <DocViewer docId={selected.id} />
 }
 
 export default App

@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 @source "../**/*.{ts,tsx,mdx}";
 
+/* 배경 그래픽 인쇄 기본값 강제 (Chrome 인쇄 다이얼로그에서 자동 체크) */
+html {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
 /* =====================
    Mermaid 다이어그램
    ===================== */
@@ -55,7 +61,7 @@ mjx-container[display='true'] {
     font-family: 'Noto Sans KR', sans-serif;
   }
 
-  .report-wrapper {
+  .doc-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -64,21 +70,22 @@ mjx-container[display='true'] {
     counter-reset: page-num;
   }
 
-  .page {
+  .doc {
     width: 210mm;
     min-height: 297mm;
     background: white;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
     padding: 20mm;
-    padding-bottom: 14mm;
     font-size: 11pt;
     color: #1a1a1a;
     box-sizing: border-box;
     position: relative;
     counter-increment: page-num;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
-  .page::after {
+  .doc::after {
     content: counter(page-num);
     position: absolute;
     bottom: 10mm;
@@ -88,21 +95,33 @@ mjx-container[display='true'] {
     font-size: 9pt;
     color: #9ca3af;
   }
+
+  /* 슬라이드 (16:9 — 브라우저 미리보기용 50% 축소) */
+  .slide-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 24px;
+  }
+
+  .slide {
+    width: 960px;
+    height: 540px;
+    background: white;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 60px;
+    font-size: 20px;
+    color: #1a1a1a;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
 }
 
 /* =====================
    인쇄 / PDF 출력
    ===================== */
-@page {
-  size: A4;
-  margin: 20mm;
-
-  @bottom-center {
-    content: counter(page);
-    font-size: 9pt;
-    color: #9ca3af;
-  }
-}
 
 @media print {
   body {
@@ -110,15 +129,17 @@ mjx-container[display='true'] {
     font-size: 11pt;
     color: #1a1a1a;
     background: white;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
-  .report-wrapper {
+  .doc-wrapper {
     display: block;
     padding: 0;
     gap: 0;
   }
 
-  .page {
+  .doc {
     width: 100%;
     min-height: auto;
     padding: 0;
@@ -126,7 +147,7 @@ mjx-container[display='true'] {
     box-sizing: border-box;
   }
 
-  .page + .page {
+  .doc + .doc {
     break-before: page;
   }
 
@@ -136,5 +157,25 @@ mjx-container[display='true'] {
 
   .print-button {
     display: none !important;
+  }
+
+  /* 슬라이드 인쇄 — named page로 A4 가로 강제 적용 */
+  .slide-wrapper {
+    display: block;
+    padding: 0;
+  }
+
+  .slide {
+    width: 254mm;
+    height: 143mm;
+    padding: 12mm 16mm;
+    box-shadow: none;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: 14pt;
+  }
+
+  .slide + .slide {
+    break-before: page;
   }
 }

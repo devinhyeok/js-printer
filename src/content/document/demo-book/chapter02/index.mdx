@@ -1,8 +1,8 @@
-import { KPISection } from '@/components/sections/KPISection'
-import { ChartSection } from '@/components/sections/ChartSection'
-import { QRCode } from '@/components/mdx/QRCode'
+import { KPISection } from '@/components/widgets/KPISection'
+import { ChartSection } from '@/components/widgets/ChartSection'
+import { QRCode } from '@/components/widgets/QRCode'
 
-<div className="page">
+<DocPage>
 
 ## 시각화 요소
 
@@ -32,9 +32,9 @@ MDX 파일 안에 React 컴포넌트를 직접 삽입해 다양한 시각 요소
 반드시 확인해야 하는 중요 내용을 강조할 때 사용합니다.
 :::
 
-</div>
+</DocPage>
 
-<div className="page">
+<DocPage>
 
 ## 차트 · 다이어그램
 
@@ -65,9 +65,9 @@ flowchart LR
     C --> D[PDF 저장]
 ```
 
-</div>
+</DocPage>
 
-<div className="page">
+<DocPage>
 
 ## 수식 · 코드 · QR
 
@@ -106,4 +106,4 @@ export default function App() {
   caption="GitHub 저장소"
 />
 
-</div>
+</DocPage>

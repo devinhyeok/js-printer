@@ -1,6 +1,6 @@
-import { FolderTree } from '@/components/mdx/FolderTree'
+import { FolderTree } from '@/components/widgets/FolderTree'
 
-<div className="page">
+<DocPage>
 
 ## 폴더 구조
 
@@ -21,12 +21,12 @@ import { FolderTree } from '@/components/mdx/FolderTree'
               type: 'file',
               note: '책 전체 조립 (import 순서로 페이지 순서 결정)',
             },
+            { name: 'cover.tsx', type: 'file', note: '표지 (TSX)' },
             {
-              name: 'components.tsx',
+              name: 'theme.tsx',
               type: 'file',
               note: '선택. 이 책만의 커스텀 스타일',
             },
-            { name: 'cover.mdx', type: 'file', note: '표지' },
             { name: 'intro.mdx', type: 'file', note: '소개 페이지' },
             {
               name: 'chapter01/',
@@ -35,14 +35,6 @@ import { FolderTree } from '@/components/mdx/FolderTree'
                 { name: 'index.mdx', type: 'file', note: '챕터 조립' },
                 { name: 'section01.mdx', type: 'file' },
                 { name: 'section02.mdx', type: 'file' },
-              ],
-            },
-            {
-              name: 'chapter02/',
-              type: 'folder',
-              children: [
-                { name: 'index.mdx', type: 'file', note: '챕터 조립' },
-                { name: 'section01.mdx', type: 'file' },
               ],
             },
           ],
@@ -54,20 +46,20 @@ import { FolderTree } from '@/components/mdx/FolderTree'
 
 ### 페이지 단위 작성
 
-`<div className="page">` 블록 하나가 A4 한 페이지로 렌더링됩니다.
+`<DocPage>` 블록 하나가 A4 한 페이지로 렌더링됩니다.
 
 ```mdx
-<div className="page">
+<DocPage>
 
 ## 1장. 제목
 
 본문 내용을 작성합니다.
 
-</div>
+</DocPage>
 ```
 
 :::note
-`page` 클래스 안에서만 A4 크기와 그림자, 페이지 번호가 적용됩니다.
+`DocPage` 안에서만 A4 크기와 그림자, 페이지 번호가 적용됩니다.
 :::
 
-</div>
+</DocPage>

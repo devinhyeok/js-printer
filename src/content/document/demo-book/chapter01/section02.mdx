@@ -1,15 +1,15 @@
-<div className="page">
+<DocPage>
 
 ## 책별 스타일 커스터마이징
 
-`components.tsx`가 있으면 해당 책에만 커스텀 MDX 컴포넌트가 적용됩니다. 없으면 기본 스타일이 사용됩니다.
+`theme.tsx`가 있으면 해당 책에만 커스텀 MDX 컴포넌트가 적용됩니다. 없으면 기본 스타일이 사용됩니다.
 
 ```tsx
-// src/content/my-book/components.tsx
-import { mdxComponents as defaults } from '../../components/mdx/MDXComponents'
+// src/content/my-book/theme.tsx
+import { docMDXComponents } from '../../../components/layout/DocMDXComponents'
 
 export const mdxComponents = {
-  ...defaults,
+  ...docMDXComponents,
   h2: ({ children }) => <h2 style={{ color: '#7c3aed' }}>{children}</h2>,
 }
 ```
@@ -35,4 +35,4 @@ export const mdxComponents = {
 콘텐츠가 확정된 후 실제 페이지 번호를 확인하고 TOC를 마지막에 업데이트하는 것을 권장합니다.
 :::
 
-</div>
+</DocPage>
