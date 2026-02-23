@@ -57,6 +57,237 @@ mjx-container[display='true'] {
 }
 
 /* =====================
+   슬라이드 — 타입별 자동 스타일링 (PowerPoint 표준 8종)
+   cover | content | section | two-content | comparison
+   title-only | blank | caption
+   ===================== */
+
+/* ─── 1. Cover (Title Slide) ─────────────────────────────── */
+.slide[data-type='cover'] {
+  background: white;
+  color: #1e293b;
+}
+
+.slide[data-type='cover'] h2 {
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  border-bottom: none;
+  padding-bottom: 0;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.slide[data-type='cover'] p {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ─── 2. Section Header ──────────────────────────────────── */
+.slide[data-type='section'] {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+}
+
+.slide[data-type='section'] h2 {
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.slide[data-type='section'] p {
+  font-size: 1.5rem;
+  font-weight: 300;
+  opacity: 0.6;
+  margin: 0;
+}
+
+/* ─── 3~6. 밝은 배경 공통 (content / two-content / comparison / caption) */
+.slide[data-type='content'],
+.slide[data-type='two-content'],
+.slide[data-type='comparison'],
+.slide[data-type='title-only'],
+.slide[data-type='caption'] {
+  background: white;
+  color: #1e293b;
+}
+
+/* 챕터 제목 (h2) — content 계열 공통 */
+.slide[data-type='content'] h2,
+.slide[data-type='two-content'] h2,
+.slide[data-type='comparison'] h2,
+.slide[data-type='caption'] h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* 슬라이드 제목 (h3) — content 계열 공통 */
+.slide[data-type='content'] h3,
+.slide[data-type='two-content'] h3,
+.slide[data-type='comparison'] h3,
+.slide[data-type='caption'] h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #4f46e5;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ─── 6. Title Only — 큰 제목, 나머지 자유 ───────────────── */
+.slide[data-type='title-only'] h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* 콘텐츠 내부 제목 (h4) — TOC 비추적, 콘텐츠 라벨 */
+.slide[data-type='content'] h4,
+.slide[data-type='two-content'] h4,
+.slide[data-type='comparison'] h4,
+.slide[data-type='caption'] h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+/* 제목 직후 첫 요소의 상단 여백 리셋 — 아이템 종류 무관하게 간격 통일 */
+.slide h2 + *,
+.slide h3 + *,
+.slide h4 + * {
+  margin-top: 0;
+}
+
+/* ─── 공통 타이포그래피 (모든 타입 공유) ──────────────────── */
+.slide p {
+  font-size: 1rem;
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
+}
+
+.slide ul {
+  list-style-type: none;
+  padding-left: 0;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.slide ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.slide ul > li {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.slide ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6366f1;
+}
+
+.slide[data-type='section'] ul > li::before {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.slide ul > li + li,
+.slide ol > li + li {
+  margin-top: 0.5rem;
+}
+
+.slide li {
+  line-height: 1.75;
+}
+
+.slide strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.slide[data-type='content'] strong,
+.slide[data-type='two-content'] strong,
+.slide[data-type='comparison'] strong,
+.slide[data-type='title-only'] strong,
+.slide[data-type='caption'] strong {
+  color: #0f172a;
+}
+
+.slide table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1rem;
+  margin: 0rem 0 1.5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.slide th {
+  background: #f8fafc;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.slide td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+}
+
+.slide tr:last-child td {
+  border-bottom: none;
+}
+
+.slide code {
+  font-size: 0.85em;
+  background-color: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: 'JetBrains Mono', 'D2Coding', monospace;
+}
+
+.slide[data-type='section'] code {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: inherit;
+}
+
+/* =====================
    브라우저 미리보기 (paged.js 처리 전 원본)
    ===================== */
 @media screen {
@@ -193,7 +424,7 @@ mjx-container[display='true'] {
     pointer-events: none;
   }
 
-  /* 슬라이드 (16:9) */
+  /* 슬라이드 (16:9) — 웹뷰와 PDF 동일 크기 */
   .slide-wrapper {
     display: flex;
     flex-direction: column;
@@ -203,15 +434,12 @@ mjx-container[display='true'] {
   }
 
   .slide {
-    width: 210mm;
-    min-height: calc(210mm * 9 / 16);
-    background: white;
+    width: 254mm;
+    height: 143mm;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-    padding: 32px 48px;
-    font-size: 20px;
-    color: #1a1a1a;
     box-sizing: border-box;
     position: relative;
+    scroll-margin-top: 20px;
   }
 
   .slide[data-overflow]::before {
@@ -219,7 +447,7 @@ mjx-container[display='true'] {
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(210mm * 9 / 16 - 1px);
+    top: calc(143mm - 1px);
     height: 2px;
     background: repeating-linear-gradient(
       to right,
@@ -235,7 +463,7 @@ mjx-container[display='true'] {
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(210mm * 9 / 16);
+    top: 143mm;
     bottom: 0;
     background: rgba(239, 68, 68, 0.06);
     pointer-events: none;
@@ -288,11 +516,9 @@ mjx-container[display='true'] {
   .slide {
     width: 254mm;
     height: 143mm;
-    padding: 12mm 16mm;
     box-shadow: none;
     overflow: hidden;
     box-sizing: border-box;
-    font-size: 14pt;
   }
 
   .slide + .slide {

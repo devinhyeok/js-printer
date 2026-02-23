@@ -1,8 +1,8 @@
 import { FolderTree } from '@/components/widgets/FolderTree'
 
-<SlidePage>
+<SlidePage type="two-content">
 
-## 폴더 구조
+### 콘텐츠 구조
 
 <FolderTree
   items={[
@@ -13,22 +13,28 @@ import { FolderTree } from '@/components/widgets/FolderTree'
         {
           name: 'document/',
           type: 'folder',
+          note: 'A4 세로 문서',
           children: [
             {
               name: 'my-book/',
               type: 'folder',
-              children: [{ name: 'index.mdx', type: 'file' }],
+              children: [
+                { name: 'index.mdx', type: 'file', note: '콘텐츠 조립' },
+              ],
             },
           ],
         },
         {
           name: 'presentation/',
           type: 'folder',
+          note: '16×9 슬라이드',
           children: [
             {
-              name: 'my-slides/',
+              name: 'demo-slide/',
               type: 'folder',
-              children: [{ name: 'index.mdx', type: 'file' }],
+              children: [
+                { name: 'index.mdx', type: 'file', note: '슬라이드 조립' },
+              ],
             },
           ],
         },
@@ -36,5 +42,12 @@ import { FolderTree } from '@/components/widgets/FolderTree'
     },
   ]}
 />
+
+---
+
+- **document/** : A4 세로 문서, 텍스트 중심 콘텐츠
+- **presentation/** : 16×9 가로 슬라이드, 레이아웃 중심
+- 각 폴더의 `index.mdx`가 엔트리 포인트
+- 폴더 단위로 프로젝트를 분리하여 관리
 
 </SlidePage>

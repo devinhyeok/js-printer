@@ -94,7 +94,7 @@ function TreeItem({ node }: { node: TreeNode }) {
 
 export function FolderTree({ items }: FolderTreeProps) {
   return (
-    <div className="no-break my-4 rounded-md border border-gray-200 bg-gray-50 px-4 py-3">
+    <div className="no-break mb-4 rounded-md border border-gray-200 bg-gray-50 px-4 py-2">
       {items.map((item, i) => (
         <TreeItem key={i} node={item} />
       ))}

@@ -18,26 +18,52 @@ export function FloatingNav() {
 
   useEffect(() => {
     const collect = (done?: () => void) => {
-      const docRaw = collectHeadings('.doc-wrapper .doc')
-      const slideRaw = collectHeadings('.slide-wrapper .slide')
-      const raw = docRaw.length > 0 ? docRaw : slideRaw
-      const result: Heading[] = []
+      const isDoc = !!document.querySelector('.doc-wrapper .doc')
 
-      const isDoc = docRaw.length > 0
-      const pages = Array.from(
-        document.querySelectorAll(
-          isDoc ? '.doc-wrapper .doc' : '.slide-wrapper .slide',
-        ),
-      )
+      if (!isDoc) {
+        const slides = Array.from(
+          document.querySelectorAll('.slide-wrapper .slide'),
+        )
+        const entries: Heading[] = []
+        slides.forEach((slideEl, idx) => {
+          const h2 = slideEl.querySelector('h2')
+          if (h2) {
+            entries.push({
+              text: h2.textContent ?? '',
+              level: 2,
+              page: idx + 1,
+              el: slideEl,
+            })
+            return
+          }
+
+          const h3 = slideEl.querySelector('h3')
+          if (h3) {
+            entries.push({
+              text: h3.textContent ?? '',
+              level: 3,
+              page: idx + 1,
+              el: slideEl,
+            })
+          }
+        })
+        setHeadings(entries)
+        done?.()
+        return
+      }
+
+      const raw = collectHeadings('.doc-wrapper .doc')
+      const result: Heading[] = []
+      const pages = Array.from(document.querySelectorAll('.doc-wrapper .doc'))
 
       pages.forEach((el, idx) => {
-        const hasHeadings = el.querySelector('h2, h3')
-        if (isDoc && el.classList.contains('doc-cover')) {
+        if (el.classList.contains('doc-cover')) {
           result.push({ text: '커버', level: 2, page: idx + 1, el })
-        } else if (isDoc && !hasHeadings && el.textContent?.includes('목차')) {
+        } else if (
+          !el.querySelector('h2, h3') &&
+          el.textContent?.includes('목차')
+        ) {
           result.push({ text: '목차', level: 2, page: idx + 1, el })
-        } else if (!isDoc && idx === 0 && !hasHeadings) {
-          result.push({ text: '커버', level: 2, page: 1, el })
         }
       })
 

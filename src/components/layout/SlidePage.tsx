@@ -1,94 +1,137 @@
-import { createContext, useContext, useRef } from 'react'
+import { Children, isValidElement, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useOverflowDetect } from '@/utils/useOverflowDetect'
 
-export type SlidePageType = 'content' | 'title' | 'two-col' | 'blank'
+export type SlideType =
+  | 'cover'
+  | 'content'
+  | 'section'
+  | 'two-content'
+  | 'comparison'
+  | 'title-only'
+  | 'blank'
+  | 'caption'
 
-export const SlideContext = createContext<SlidePageType>('content')
-
-export function useSlideContext() {
-  return useContext(SlideContext)
-}
-
-interface SlidePageContent {
-  type?: 'content'
+interface SlidePageProps {
+  type?: SlideType
+  bg?: string
   children?: ReactNode
 }
 
-interface SlidePageTitle {
-  type: 'title'
-  children?: ReactNode
+const columnRatios: Partial<Record<SlideType, string>> = {
+  'two-content': '1fr 1fr',
+  comparison: '1fr 1fr',
+  caption: '35fr 65fr',
 }
 
-interface SlidePageTwoCol {
-  type: 'two-col'
-  children?: ReactNode
+const typeConfig: Record<SlideType, { layout: string; padding: string }> = {
+  cover: {
+    layout: 'flex flex-col items-center justify-center text-center',
+    padding: 'px-20 py-16',
+  },
+  section: {
+    layout: 'flex flex-col items-center justify-center text-center',
+    padding: 'px-20 py-16',
+  },
+  content: {
+    layout: 'flex flex-col',
+    padding: 'px-16 py-12',
+  },
+  'two-content': {
+    layout: 'flex flex-col',
+    padding: 'px-16 py-12',
+  },
+  comparison: {
+    layout: 'flex flex-col',
+    padding: 'px-16 py-12',
+  },
+  'title-only': {
+    layout: 'flex flex-col',
+    padding: 'px-16 py-12',
+  },
+  blank: {
+    layout: 'flex flex-col',
+    padding: '',
+  },
+  caption: {
+    layout: 'flex flex-col',
+    padding: 'px-16 py-12',
+  },
 }
 
-interface SlidePageBlank {
-  type: 'blank'
-  children?: ReactNode
+function splitAtHr(children: ReactNode): ReactNode[][] {
+  const sections: ReactNode[][] = [[]]
+  Children.forEach(children, (child) => {
+    if (isValidElement(child) && child.type === 'hr') {
+      sections.push([])
+    } else {
+      sections[sections.length - 1].push(child)
+    }
+  })
+  return sections
 }
 
-type SlidePageProps =
-  | SlidePageContent
-  | SlidePageTitle
-  | SlidePageTwoCol
-  | SlidePageBlank
-
-/** two-col 슬라이드에서 각 열을 감싸는 컴포넌트 */
-export function Col({ children }: { children?: ReactNode }) {
-  return (
-    <div className="flex-1 overflow-hidden text-xl text-gray-700 leading-relaxed">
-      {children}
-    </div>
-  )
+function extractTitle(nodes: ReactNode[]): {
+  title: ReactNode | null
+  rest: ReactNode[]
+} {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]
+    if (isValidElement(node) && (node.type === 'h2' || node.type === 'h3')) {
+      return {
+        title: node,
+        rest: [...nodes.slice(0, i), ...nodes.slice(i + 1)],
+      }
+    }
+  }
+  return { title: null, rest: nodes }
 }
 
-export function SlidePage(props: SlidePageProps) {
+export function SlidePage({ type = 'content', bg, children }: SlidePageProps) {
   const ref = useRef<HTMLDivElement>(null)
   useOverflowDetect(ref)
+  const config = typeConfig[type]
+  const gridTemplate = columnRatios[type]
 
-  const type = props.type ?? 'content'
+  let content: ReactNode = children
 
-  switch (type) {
-    case 'title':
-      return (
-        <SlideContext.Provider value="title">
+  if (gridTemplate) {
+    const sections = splitAtHr(children)
+    if (sections.length >= 2) {
+      const { title, rest: firstCol } = extractTitle(sections[0])
+      const columns = [firstCol, ...sections.slice(1)]
+
+      content = (
+        <>
+          {title}
           <div
-            ref={ref}
-            className="slide flex flex-col items-center justify-center text-center px-20"
+            className="flex-1"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: gridTemplate,
+              gap: '2rem',
+              alignItems: 'start',
+            }}
           >
-            {props.children}
+            {columns.map((col, i) => (
+              <div key={i} className="min-w-0 overflow-hidden">
+                {col}
+              </div>
+            ))}
           </div>
-        </SlideContext.Provider>
+        </>
       )
-
-    case 'two-col':
-      return (
-        <SlideContext.Provider value="two-col">
-          <div ref={ref} className="slide flex flex-col px-16 py-12">
-            {props.children}
-          </div>
-        </SlideContext.Provider>
-      )
-
-    case 'blank':
-      return (
-        <SlideContext.Provider value="blank">
-          <div ref={ref} className="slide">
-            {props.children}
-          </div>
-        </SlideContext.Provider>
-      )
-
-    default: // content
-      return (
-        <SlideContext.Provider value="content">
-          <div ref={ref} className="slide flex flex-col px-16 py-12">
-            {props.children}
-          </div>
-        </SlideContext.Provider>
-      )
+    }
   }
+
+  return (
+    <div
+      ref={ref}
+      className={`slide ${config.layout} ${config.padding}`}
+      data-type={type}
+      style={bg ? { background: bg } : undefined}
+    >
+      {content}
+    </div>
+  )
 }

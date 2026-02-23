@@ -9,7 +9,7 @@ type SlideModule = { default: ComponentType<MDXProps> }
 type ThemeModule = { mdxComponents: MDXComponents }
 
 const slideGlob = import.meta.glob<SlideModule>(
-  '../content/presentation/*/index.mdx',
+  '../content/presentation/*/index.{mdx,tsx}',
   { eager: true },
 )
 const themeGlob = import.meta.glob<ThemeModule>(
@@ -23,7 +23,9 @@ interface SlideViewerProps {
 
 export function SlideViewer({ slideId }: SlideViewerProps) {
   const Slide =
-    slideGlob[`../content/presentation/${slideId}/index.mdx`]?.default ?? null
+    slideGlob[`../content/presentation/${slideId}/index.mdx`]?.default ??
+    slideGlob[`../content/presentation/${slideId}/index.tsx`]?.default ??
+    null
   const themeMod = themeGlob[`../content/presentation/${slideId}/theme.tsx`]
   const components: MDXComponents = themeMod?.mdxComponents ?? defaultComponents
 
