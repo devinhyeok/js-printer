@@ -1,135 +1,13 @@
-import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react'
-import { useReactToPrint } from 'react-to-print'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface DocLayoutProps {
   children: ReactNode
 }
 
-const PRINT_PAGE_STYLE = `
-@page {
-  size: A4;
-  margin: 0;
-}
-
-@media print {
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 11pt;
-    color: #1a1a1a;
-    background: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .doc-source-hidden {
-    display: block !important;
-    position: static !important;
-    left: auto !important;
-    visibility: visible !important;
-  }
-
-  .doc-wrapper {
-    display: block !important;
-    padding: 0 !important;
-    counter-reset: doc-page !important;
-  }
-
-  .doc {
-    width: auto !important;
-    min-height: auto !important;
-    box-shadow: none !important;
-    padding: 20mm !important;
-    box-sizing: border-box !important;
-    background: transparent !important;
-    position: relative !important;
-    counter-increment: doc-page !important;
-  }
-
-  .doc::before,
-  .doc::after {
-    display: none !important;
-  }
-
-  .doc-page-num {
-    position: absolute !important;
-    top: calc(297mm - 13mm) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    font-size: 10pt !important;
-    color: #6b7280 !important;
-    pointer-events: none !important;
-    z-index: 5 !important;
-  }
-
-  .doc-page-num::after {
-    content: counter(doc-page) !important;
-  }
-
-  [data-hide-page-num] .doc-page-num {
-    display: none !important;
-  }
-
-  .doc.doc-cover {
-    min-height: calc(297mm - 40mm) !important;
-  }
-
-  .cover-title {
-    clip-path: inset(2px);
-  }
-
-  .doc + .doc {
-    break-before: page;
-    page-break-before: always;
-  }
-
-  .no-break,
-  pre,
-  table,
-  img,
-  svg,
-  figure,
-  [data-rehype-pretty-code-figure],
-  mjx-container {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-
-  .page-break-before {
-    break-before: page;
-    page-break-before: always;
-  }
-
-  .print-button {
-    display: none !important;
-  }
-}
-`
-
 export function DocLayout({ children }: DocLayoutProps) {
   const sourceRef = useRef<HTMLDivElement>(null)
   const targetRef = useRef<HTMLDivElement>(null)
   const [paginated, setPaginated] = useState(false)
-
-  const handlePrint = useReactToPrint({
-    contentRef: sourceRef,
-    pageStyle: PRINT_PAGE_STYLE,
-    documentTitle: 'JS Printer',
-  })
-
-  const printHandler = useCallback(() => {
-    handlePrint()
-  }, [handlePrint])
-
-  useEffect(() => {
-    window.addEventListener('doc:print', printHandler)
-    return () => window.removeEventListener('doc:print', printHandler)
-  }, [printHandler])
 
   useEffect(() => {
     const source = sourceRef.current
@@ -162,16 +40,15 @@ export function DocLayout({ children }: DocLayoutProps) {
 
   return (
     <>
-      {/* 원본 콘텐츠: 화면에서는 CSS로 숨기고, react-to-print가 인쇄 시 사용 */}
       <div
         ref={sourceRef}
         className={`doc-wrapper ${paginated ? 'doc-source-hidden' : ''}`}
       >
         {children}
       </div>
-      {/* paged.js 웹 미리보기 출력 */}
       <div
         ref={targetRef}
+        className="doc-preview"
         style={paginated ? undefined : { display: 'none' }}
       />
     </>
