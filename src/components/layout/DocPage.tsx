@@ -107,6 +107,7 @@ function AutoTOC() {
         <div className="mt-1 h-px w-full bg-gray-700" />
       </div>
       <TOCContent items={items} />
+      <span className="doc-page-num" aria-hidden="true" />
     </div>
   )
 }
@@ -123,6 +124,7 @@ export function DocPage(props: DocPageProps) {
           className="doc doc-cover flex flex-col items-center justify-center text-center"
         >
           {props.children}
+          <span className="doc-page-num" aria-hidden="true" />
         </div>
       </DocCoverContext.Provider>
     )
@@ -135,6 +137,7 @@ export function DocPage(props: DocPageProps) {
   return (
     <div ref={ref} className="doc">
       {props.children}
+      <span className="doc-page-num" aria-hidden="true" />
     </div>
   )
 }

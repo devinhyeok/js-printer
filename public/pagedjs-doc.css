@@ -4,8 +4,8 @@
 
   @bottom-center {
     content: counter(page);
-    font-size: 11pt;
-    color: #9ca3af;
+    font-size: 10pt;
+    color: #6b7280;
   }
 }
 

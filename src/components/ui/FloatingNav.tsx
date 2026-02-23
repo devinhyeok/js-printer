@@ -190,7 +190,7 @@ export function FloatingNav() {
 
         <div
           ref={navRef}
-          className={`max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto py-2 transition-opacity duration-150 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
+          className={`max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto px-2 py-2 transition-opacity duration-150 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
         >
           {headings.map((h, i) => {
             const isActive = i === activeIdx
@@ -199,11 +199,11 @@ export function FloatingNav() {
               return (
                 <div key={i}>
                   {chapterIdx > 1 && (
-                    <div className="mx-4 my-2 border-t border-gray-100" />
+                    <div className="mx-3 my-2 border-t border-gray-100" />
                   )}
                   <button
                     data-nav-idx={i}
-                    className={`w-full text-left px-4 py-1.5 transition-colors flex items-center gap-2 ${
+                    className={`w-full text-left px-3 py-1.5 rounded-md transition-colors flex items-center gap-2 ${
                       isActive ? 'bg-blue-50' : 'hover:bg-gray-50'
                     }`}
                     onClick={() =>
@@ -231,10 +231,10 @@ export function FloatingNav() {
               <button
                 key={i}
                 data-nav-idx={i}
-                className={`w-full text-left px-4 py-1 text-xs transition-colors flex items-center ${
+                className={`w-full text-left px-3 py-1.5 rounded-md text-xs transition-colors flex items-center ${
                   isActive
                     ? 'bg-blue-50 text-blue-600 font-medium'
-                    : 'text-gray-500 hover:text-gray-800'
+                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
                 }`}
                 onClick={() =>
                   h.el.scrollIntoView({ behavior: 'smooth', block: 'start' })

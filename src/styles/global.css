@@ -75,6 +75,7 @@ mjx-container[display='true'] {
     align-items: center;
     padding: 40px 20px;
     gap: 24px;
+    counter-reset: doc-page;
   }
 
   .doc h2,
@@ -94,6 +95,31 @@ mjx-container[display='true'] {
     position: relative;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    counter-increment: doc-page;
+  }
+
+  .doc-page-num {
+    position: absolute;
+    top: calc(297mm - 13mm);
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10pt;
+    color: #6b7280;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .doc-page-num::after {
+    content: counter(doc-page);
+  }
+
+  body[data-hide-page-num] .doc-page-num {
+    display: none;
+  }
+
+  body[data-hide-page-num] .pagedjs_page::after {
+    display: none;
   }
 
   .doc > *:first-child {
@@ -142,7 +168,7 @@ mjx-container[display='true'] {
     flex-direction: column;
     align-items: center;
     padding: 40px 20px;
-    gap: 24px;
+    gap: 48px;
   }
 
   .pagedjs_page {
@@ -152,6 +178,19 @@ mjx-container[display='true'] {
     color: #1a1a1a;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    position: relative;
+  }
+
+  .pagedjs_page::after {
+    content: attr(data-page-number);
+    position: absolute;
+    bottom: -32px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10pt;
+    color: #6b7280;
+    pointer-events: none;
   }
 
   /* 슬라이드 (16:9) */

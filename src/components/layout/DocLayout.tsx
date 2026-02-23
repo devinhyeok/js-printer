@@ -31,6 +31,7 @@ const PRINT_PAGE_STYLE = `
   .doc-wrapper {
     display: block !important;
     padding: 0 !important;
+    counter-reset: doc-page !important;
   }
 
   .doc {
@@ -40,10 +41,32 @@ const PRINT_PAGE_STYLE = `
     padding: 20mm !important;
     box-sizing: border-box !important;
     background: transparent !important;
+    position: relative !important;
+    counter-increment: doc-page !important;
   }
 
   .doc::before,
   .doc::after {
+    display: none !important;
+  }
+
+  .doc-page-num {
+    position: absolute !important;
+    top: calc(297mm - 13mm) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 10pt !important;
+    color: #6b7280 !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
+  }
+
+  .doc-page-num::after {
+    content: counter(doc-page) !important;
+  }
+
+  [data-hide-page-num] .doc-page-num {
     display: none !important;
   }
 
