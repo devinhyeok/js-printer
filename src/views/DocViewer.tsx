@@ -1,4 +1,5 @@
 import { type ComponentType } from 'react'
+import { useParams } from 'react-router'
 import { MDXProvider } from '@mdx-js/react'
 import { DocLayout } from '../components/layout/DocLayout'
 import { docMDXComponents as defaultComponents } from '../components/layout/DocMDXComponents'
@@ -16,11 +17,8 @@ const themeGlob = import.meta.glob<ThemeModule>(
   { eager: true },
 )
 
-interface DocViewerProps {
-  docId: string
-}
-
-export function DocViewer({ docId }: DocViewerProps) {
+export function DocViewer() {
+  const { docId } = useParams<{ docId: string }>()
   const Doc = docGlob[`../content/document/${docId}/index.mdx`]?.default ?? null
   const themeMod = themeGlob[`../content/document/${docId}/theme.tsx`]
   const components: MDXComponents = themeMod?.mdxComponents ?? defaultComponents

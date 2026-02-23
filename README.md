@@ -64,7 +64,7 @@ export const catalog: CatalogItem[] = [
   // 폴더로 그룹핑 → 접을 수 있는 트리 구조
   {
     folder: '예제',
-    children: [{ id: 'demo-book', label: 'JS Printer 설명서' }],
+    children: [{ id: 'demo-doc', label: 'JS Printer 설명서' }],
   },
 ]
 ```

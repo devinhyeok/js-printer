@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router'
 import { ChevronDown, ChevronRight, PanelLeft } from 'lucide-react'
 import { catalog as docCatalog } from '../../content/document/catalog'
 import { catalog as slideCatalog } from '../../content/presentation/catalog'
 import { isFolder } from '../../content/catalog-types'
+import { useAppStore } from '../../stores/useAppStore'
 import type { BookItem, CatalogItem } from '../../content/catalog-types'
 
 type ContentType = 'doc' | 'slide'
@@ -39,16 +41,12 @@ function flattenBooks(items: CatalogItem[], type: ContentType): FlatBook[] {
   return result
 }
 
-function navigate(id: string, type: ContentType) {
-  const url = new URL(window.location.href)
-  url.searchParams.set('id', id)
-  url.searchParams.set('type', type)
-  window.history.pushState({}, '', url)
-  window.dispatchEvent(new PopStateEvent('popstate'))
-}
-
-function getCurrentId(): string {
-  return new URLSearchParams(window.location.search).get('id') ?? ''
+function findFirstUiKey(id: string): string {
+  const all = [
+    ...flattenBooks(docCatalog, 'doc'),
+    ...flattenBooks(slideCatalog, 'slide'),
+  ]
+  return all.find((b) => b.id === id)?.uiKey ?? ''
 }
 
 function getSearchResults(query: string): FlatBook[] {
@@ -67,7 +65,7 @@ interface BookRowProps {
   type: ContentType
   uiKey: string
   activeKey: string
-  onSelect: (uiKey: string) => void
+  onSelect: (uiKey: string, id: string, type: ContentType) => void
   indent?: boolean
 }
 
@@ -92,10 +90,7 @@ function BookRow({
             : 'bg-indigo-50'
           : 'hover:bg-gray-50'
       }`}
-      onClick={() => {
-        onSelect(uiKey)
-        navigate(book.id, type)
-      }}
+      onClick={() => onSelect(uiKey, book.id, type)}
     >
       <span
         className={`text-xs truncate flex-1 ${
@@ -125,7 +120,7 @@ interface SectionTreeProps {
   items: CatalogItem[]
   type: ContentType
   activeKey: string
-  onSelect: (uiKey: string) => void
+  onSelect: (uiKey: string, id: string, type: ContentType) => void
 }
 
 function SectionTree({ items, type, activeKey, onSelect }: SectionTreeProps) {
@@ -165,13 +160,13 @@ function SectionTree({ items, type, activeKey, onSelect }: SectionTreeProps) {
                   }}
                 >
                   {item.children.map((child) => {
-                    const uiKey = `${type}-${idx++}`
+                    const childKey = `${type}-${idx++}`
                     return (
                       <BookRow
-                        key={uiKey}
+                        key={childKey}
                         book={child}
                         type={type}
-                        uiKey={uiKey}
+                        uiKey={childKey}
                         activeKey={activeKey}
                         onSelect={onSelect}
                         indent
@@ -183,13 +178,13 @@ function SectionTree({ items, type, activeKey, onSelect }: SectionTreeProps) {
             </div>
           )
         }
-        const uiKey = `${type}-${idx++}`
+        const itemKey = `${type}-${idx++}`
         return (
           <BookRow
-            key={uiKey}
+            key={itemKey}
             book={item}
             type={type}
-            uiKey={uiKey}
+            uiKey={itemKey}
             activeKey={activeKey}
             onSelect={onSelect}
           />
@@ -199,46 +194,38 @@ function SectionTree({ items, type, activeKey, onSelect }: SectionTreeProps) {
   )
 }
 
-function findFirstUiKey(id: string): string {
-  const all = [
-    ...flattenBooks(docCatalog, 'doc'),
-    ...flattenBooks(slideCatalog, 'slide'),
-  ]
-  return all.find((b) => b.id === id)?.uiKey ?? ''
+function getCurrentIdFromPath(pathname: string): string {
+  const docMatch = pathname.match(/^\/doc\/(.+)/)
+  const slideMatch = pathname.match(/^\/slide\/(.+)/)
+  return docMatch?.[1] ?? slideMatch?.[1] ?? ''
 }
 
 export function BookSwitcher() {
-  const [open, setOpen] = useState(true)
-  const [query, setQuery] = useState('')
-  const [activeKey, setActiveKey] = useState(() =>
-    findFirstUiKey(getCurrentId()),
-  )
-  const inputRef = useRef<HTMLInputElement>(null)
-  const selfNavigated = useRef(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const open = useAppStore((s) => s.ui.sidebarOpen)
+  const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
 
-  const handleSelect = (uiKey: string) => {
-    selfNavigated.current = true
-    setActiveKey(uiKey)
-  }
+  const currentId = getCurrentIdFromPath(location.pathname)
+  const [query, setQuery] = useState('')
+  const [activeKey, setActiveKey] = useState(() => findFirstUiKey(currentId))
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const onPopState = () => {
-      if (selfNavigated.current) {
-        selfNavigated.current = false
-        return
-      }
-      setActiveKey(findFirstUiKey(getCurrentId()))
-    }
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
+    setActiveKey(findFirstUiKey(getCurrentIdFromPath(location.pathname)))
+  }, [location.pathname])
+
+  const handleSelect = (uiKey: string, id: string, type: ContentType) => {
+    setActiveKey(uiKey)
+    navigate(`/${type}/${id}`)
+  }
 
   if (!open) {
     return (
       <button
         className="print-button fixed top-4 left-4 z-50 rounded-full bg-white p-2.5 shadow-md border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 active:scale-95 transition-all"
         onClick={() => {
-          setOpen(true)
+          setSidebarOpen(true)
           setTimeout(() => inputRef.current?.focus(), 50)
         }}
         title="콘텐츠 목록"
@@ -253,20 +240,20 @@ export function BookSwitcher() {
 
   return (
     <div className="print-button fixed top-4 left-4 z-50 w-56 xl:w-64 2xl:w-100 3xl:w-120 transition-all duration-300">
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <div className="flex flex-col max-h-[calc(100vh-6rem)] bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
             콘텐츠
           </span>
           <button
             className="text-gray-400 hover:text-gray-600 transition-colors"
-            onClick={() => setOpen(false)}
+            onClick={() => setSidebarOpen(false)}
           >
             <PanelLeft size={14} />
           </button>
         </div>
 
-        <div className="px-3 py-2 border-b border-gray-100">
+        <div className="px-3 py-2 border-b border-gray-100 shrink-0">
           <input
             ref={inputRef}
             type="text"
@@ -277,7 +264,7 @@ export function BookSwitcher() {
           />
         </div>
 
-        <div className="max-h-[50vh] md:max-h-[60vh] xl:max-h-[75vh] overflow-y-auto px-2 py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto px-2 py-2">
           {isSearching ? (
             searchResults.length > 0 ? (
               <div className="flex flex-col gap-0.5">

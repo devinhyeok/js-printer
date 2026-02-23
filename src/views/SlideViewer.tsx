@@ -1,4 +1,5 @@
 import { type ComponentType } from 'react'
+import { useParams } from 'react-router'
 import { MDXProvider } from '@mdx-js/react'
 import { SlideLayout } from '../components/layout/SlideLayout'
 import { slideMDXComponents as defaultComponents } from '../components/layout/SlideMDXComponents'
@@ -17,11 +18,8 @@ const themeGlob = import.meta.glob<ThemeModule>(
   { eager: true },
 )
 
-interface SlideViewerProps {
-  slideId: string
-}
-
-export function SlideViewer({ slideId }: SlideViewerProps) {
+export function SlideViewer() {
+  const { slideId } = useParams<{ slideId: string }>()
   const Slide =
     slideGlob[`../content/presentation/${slideId}/index.mdx`]?.default ??
     slideGlob[`../content/presentation/${slideId}/index.tsx`]?.default ??

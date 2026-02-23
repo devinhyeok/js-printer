@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router'
 import { PanelRight } from 'lucide-react'
 import { collectHeadings } from '@/utils/collectHeadings'
 
@@ -15,6 +16,8 @@ export function FloatingNav() {
   const [activeIdx, setActiveIdx] = useState<number>(-1)
   const [loading, setLoading] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const isFirstMount = useRef(true)
 
   useEffect(() => {
     const collect = (done?: () => void) => {
@@ -78,25 +81,19 @@ export function FloatingNav() {
       setHeadings(result)
       done?.()
     }
-    collect()
-    const t = setTimeout(collect, 300)
 
-    // 콘텐츠 전환 시 이전 목차 유지 → 새 헤딩 수집 완료 후 교체
-    let navTimer: ReturnType<typeof setTimeout>
-    const onNav = () => {
-      setActiveIdx(-1)
-      setLoading(true)
-      clearTimeout(navTimer)
-      navTimer = setTimeout(() => collect(() => setLoading(false)), 350)
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      collect()
+      const t = setTimeout(collect, 300)
+      return () => clearTimeout(t)
     }
-    window.addEventListener('popstate', onNav)
 
-    return () => {
-      clearTimeout(t)
-      clearTimeout(navTimer)
-      window.removeEventListener('popstate', onNav)
-    }
-  }, [])
+    setActiveIdx(-1)
+    setLoading(true)
+    const navTimer = setTimeout(() => collect(() => setLoading(false)), 350)
+    return () => clearTimeout(navTimer)
+  }, [location.pathname])
 
   useEffect(() => {
     if (headings.length === 0) return
@@ -161,8 +158,8 @@ export function FloatingNav() {
 
   return (
     <div className="print-button fixed top-4 right-4 z-50 w-56 xl:w-64 2xl:w-100 3xl:w-120 transition-all duration-300">
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <div className="flex flex-col max-h-[calc(100vh-6rem)] bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
               목차
@@ -181,7 +178,7 @@ export function FloatingNav() {
 
         <div
           ref={navRef}
-          className="max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto px-2 py-2"
+          className="flex-1 min-h-0 overflow-y-auto px-2 py-2"
         >
           {headings.map((h, i) => {
             const isActive = i === activeIdx

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 
 const docPaths = import.meta.glob('../content/document/*/index.mdx')
 const slidePaths = import.meta.glob('../content/presentation/*/index.mdx')
@@ -14,10 +15,6 @@ const slideIds = Object.keys(slidePaths)
   .sort()
 
 export type ContentType = 'doc' | 'slide'
-
-interface ContentSelectorProps {
-  onSelect: (id: string, type: ContentType) => void
-}
 
 function ItemList({
   ids,
@@ -63,9 +60,14 @@ function ItemList({
   )
 }
 
-export function ContentSelector({ onSelect }: ContentSelectorProps) {
+export function ContentSelector() {
   const [query, setQuery] = useState('')
+  const navigate = useNavigate()
   const total = docIds.length + slideIds.length
+
+  const handleSelect = (id: string, type: ContentType) => {
+    navigate(`/${type}/${id}`)
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-100 px-4 py-12">
@@ -89,7 +91,7 @@ export function ContentSelector({ onSelect }: ContentSelectorProps) {
               ids={docIds}
               type="doc"
               query={query}
-              onSelect={onSelect}
+              onSelect={handleSelect}
             />
           </section>
         )}
@@ -103,7 +105,7 @@ export function ContentSelector({ onSelect }: ContentSelectorProps) {
               ids={slideIds}
               type="slide"
               query={query}
-              onSelect={onSelect}
+              onSelect={handleSelect}
             />
           </section>
         )}

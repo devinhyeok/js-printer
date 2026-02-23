@@ -2,13 +2,17 @@
 
 ```
 src/
-├── main.tsx                          # 엔트리포인트
-├── App.tsx                           # 라우팅 (문서/슬라이드 선택)
+├── main.tsx                          # 엔트리포인트 (BrowserRouter 래핑)
+├── App.tsx                           # React Router 라우트 정의
 ├── styles/
 │   └── global.css                    # 전역 스타일 (화면/인쇄/슬라이드 타이포)
+├── stores/
+│   └── useAppStore.ts                # Zustand + Immer 전역 스토어
+├── lib/
+│   └── schemas.ts                    # Zod 스키마 유틸리티
 ├── components/
 │   ├── layout/
-│   │   ├── ViewerShell.tsx           # 공통 뷰어 (react-to-print, 목차, PDF버튼)
+│   │   ├── ViewerShell.tsx           # 공통 뷰어 (react-to-print, 홈·줌·PDF 버튼)
 │   │   ├── DocLayout.tsx             # 문서 레이아웃 (paged.js 웹 미리보기)
 │   │   ├── DocPage.tsx               # A4 페이지 단위 (cover/toc/content)
 │   │   ├── DocMDXComponents.tsx      # 문서용 MDX 컴포넌트 맵핑
@@ -23,17 +27,17 @@ src/
 │   │   ├── MermaidDiagram.tsx        # Mermaid 다이어그램
 │   │   └── QRCode.tsx                # QR 코드
 │   └── ui/
-│       ├── BookSwitcher.tsx          # 콘텐츠 선택 UI
-│       └── FloatingNav.tsx           # 플로팅 목차
+│       ├── BookSwitcher.tsx          # 콘텐츠 선택 사이드바 (useNavigate + 스토어)
+│       └── FloatingNav.tsx           # 플로팅 목차 (useLocation 기반 갱신)
 ├── views/
 │   ├── ContentSelector.tsx           # 콘텐츠 선택 화면
-│   ├── DocViewer.tsx                 # 문서 뷰어
-│   └── SlideViewer.tsx               # 슬라이드 뷰어 (MDX 우선, TSX 폴백)
+│   ├── DocViewer.tsx                 # 문서 뷰어 (useParams로 docId 취득)
+│   └── SlideViewer.tsx               # 슬라이드 뷰어 (useParams로 slideId 취득)
 └── content/
     ├── catalog-types.ts              # 카탈로그 타입 정의
     ├── document/
     │   ├── catalog.ts                # 문서 카탈로그
-    │   └── demo-book/                # 예제 문서
+    │   └── demo-doc/                 # 예제 문서
     │       ├── index.mdx             # 콘텐츠 전체 조립
     │       ├── cover.mdx             # 표지
     │       ├── intro.mdx             # 소개
@@ -57,6 +61,40 @@ src/
             ├── slide04.mdx           # 타입 시스템 (type="caption")
             └── slide05.mdx           # 마무리 (type="section")
 ```
+
+## 기술 스택
+
+| 카테고리    | 라이브러리                        | 역할                                    |
+| ----------- | --------------------------------- | --------------------------------------- |
+| 전역 상태   | Zustand + Immer 미들웨어          | showPageNum, sidebarOpen 등 공유 상태   |
+| 라우팅      | React Router v7 (라이브러리 모드) | 경로 기반 내비게이션, Next.js 전환 대비 |
+| 폼          | React Hook Form + Zod             | 향후 설정/입력 폼 유효성 검증용         |
+| 스타일      | Tailwind CSS v4                   | 유틸리티 기반 스타일링                  |
+| 차트        | Recharts                          | 꺾은선/막대 차트                        |
+| PDF 출력    | react-to-print                    | 브라우저 인쇄 엔진 기반 PDF 생성        |
+| 웹 미리보기 | paged.js                          | DOC 전용 A4 페이지 분할                 |
+| 다이어그램  | Mermaid                           | 플로차트, 시퀀스 다이어그램 등          |
+
+## 라우팅
+
+React Router v7 라이브러리 모드를 사용합니다.
+
+| 경로              | 컴포넌트                      | 설명             |
+| ----------------- | ----------------------------- | ---------------- |
+| `/`               | `ContentSelector`             | 콘텐츠 선택 화면 |
+| `/doc/:docId`     | `ViewerShell` → `DocViewer`   | 문서 뷰어        |
+| `/slide/:slideId` | `ViewerShell` → `SlideViewer` | 슬라이드 뷰어    |
+
+`main.tsx`에서 `BrowserRouter`로 래핑하고, `App.tsx`에서 `Routes`/`Route`로 선언합니다.
+
+## 전역 상태 (Zustand)
+
+`src/stores/useAppStore.ts`에서 Immer 미들웨어와 함께 관리합니다.
+
+| 상태                 | 사용 위치    | 설명                      |
+| -------------------- | ------------ | ------------------------- |
+| `viewer.showPageNum` | ViewerShell  | DOC 페이지 번호 토글      |
+| `ui.sidebarOpen`     | BookSwitcher | 콘텐츠 사이드바 열림/닫힘 |
 
 ## DOC vs Slide
 
@@ -131,18 +169,23 @@ MDX에서 `# 제목`, `- 항목` 같이 마크다운만 쓰면 타입에 맞는 
 ### 컴포넌트 구조
 
 ```
-App
-├── ViewerShell (type="doc" | "slide")
-│   ├── react-to-print ← DOC/Slide 공통 인쇄 로직
-│   ├── pageStyle 분기 ← A4 vs 254×143mm
-│   ├── 페이지 번호 토글 ← DOC에서만 표시
-│   │
-│   ├── DocViewer → DocLayout (pagedjs 웹 미리보기)
-│   │   ├── sourceRef ← 원본 콘텐츠 (화면에서 숨김, 인쇄 시 사용)
-│   │   └── targetRef ← pagedjs가 렌더링한 미리보기 (화면 표시용)
-│   │
-│   └── SlideViewer → SlideLayout (단순 래퍼)
-│       └── slide-wrapper ← MDX 슬라이드 목록
+BrowserRouter
+└── App (Routes)
+    ├── / → ContentSelector
+    ├── /doc/:docId → ViewerShell (type="doc")
+    │   ├── BookSwitcher (useNavigate + useAppStore)
+    │   ├── FloatingNav (useLocation 기반 헤딩 갱신)
+    │   ├── 홈 버튼 → navigate('/')
+    │   ├── 줌 컨트롤 (확대/축소/초기화/맞춤)
+    │   ├── 페이지 번호 토글 (useAppStore)
+    │   ├── PDF 저장 (react-to-print)
+    │   └── DocViewer (useParams) → DocLayout (pagedjs 웹 미리보기)
+    │       ├── sourceRef ← 원본 콘텐츠 (화면에서 숨김, 인쇄 시 사용)
+    │       └── targetRef ← pagedjs가 렌더링한 미리보기 (화면 표시용)
+    └── /slide/:slideId → ViewerShell (type="slide")
+        ├── BookSwitcher, FloatingNav, 홈, 줌, PDF (위와 동일)
+        └── SlideViewer (useParams) → SlideLayout (단순 래퍼)
+            └── slide-wrapper ← MDX 슬라이드 목록
 ```
 
 ### 인쇄 흐름

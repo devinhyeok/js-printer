@@ -8,6 +8,6 @@ import type { CatalogItem } from '../catalog-types'
 export const catalog: CatalogItem[] = [
   {
     folder: '예제',
-    children: [{ id: 'demo-book', label: 'JS Printer 설명서' }],
+    children: [{ id: 'demo-doc', label: 'JS Printer 설명서' }],
   },
 ]
