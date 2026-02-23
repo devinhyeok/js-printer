@@ -101,41 +101,6 @@ export function FloatingNav() {
   useEffect(() => {
     if (headings.length === 0) return
 
-    const slideWrap = document.querySelector<HTMLElement>('.slide-wrapper')
-    const wrapper =
-      document.querySelector<HTMLElement>('.doc-wrapper') ?? slideWrap
-    const threshold = slideWrap ? 44 : 124
-
-    const applyPadding = () => {
-      if (!wrapper) return
-
-      // Reset to default padding to measure natural layout
-      wrapper.style.paddingBottom = '40px'
-
-      const lastEl = headings[headings.length - 1].el as HTMLElement
-      const lastRect = lastEl.getBoundingClientRect()
-      const wrapperRect = wrapper.getBoundingClientRect()
-
-      const requiredSpaceBelow = window.innerHeight - threshold
-      const currentSpaceBelow = wrapperRect.bottom - lastRect.top
-      const extraPadding = requiredSpaceBelow - currentSpaceBelow
-
-      if (extraPadding > 0) {
-        wrapper.style.paddingBottom = `${40 + Math.ceil(extraPadding)}px`
-      }
-    }
-
-    applyPadding()
-    window.addEventListener('resize', applyPadding)
-    return () => {
-      window.removeEventListener('resize', applyPadding)
-      if (wrapper) wrapper.style.paddingBottom = ''
-    }
-  }, [headings])
-
-  useEffect(() => {
-    if (headings.length === 0) return
-
     const isSlide = !!document.querySelector('.slide-wrapper')
     const threshold = isSlide ? 44 : 124
 
@@ -198,25 +163,25 @@ export function FloatingNav() {
     <div className="print-button fixed top-4 right-4 z-50 w-56 xl:w-64 2xl:w-100 3xl:w-120 transition-all duration-300">
       <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
-            목차
-          </span>
           <div className="flex items-center gap-2">
+            <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">
+              목차
+            </span>
             {loading && (
               <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-200 border-t-blue-400 animate-spin" />
             )}
-            <button
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              <PanelRight size={14} />
-            </button>
           </div>
+          <button
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            <PanelRight size={14} />
+          </button>
         </div>
 
         <div
           ref={navRef}
-          className={`max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto px-2 py-2 transition-opacity duration-150 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
+          className="max-h-[60vh] md:max-h-[75vh] xl:max-h-[85vh] overflow-y-auto px-2 py-2"
         >
           {headings.map((h, i) => {
             const isActive = i === activeIdx

@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useReactToPrint } from 'react-to-print'
+import { Minus, Plus, Maximize } from 'lucide-react'
 import { BookSwitcher } from '../ui/BookSwitcher'
 import { FloatingNav } from '../ui/FloatingNav'
 
@@ -8,6 +9,11 @@ interface ViewerShellProps {
   children: ReactNode
   type: 'doc' | 'slide'
 }
+
+const ZOOM_STEP = 0.1
+const MIN_ZOOM = 0.25
+const MAX_ZOOM = 2.0
+const CONTENT_WIDTH: Record<string, number> = { slide: 960, doc: 794 }
 
 const BASE_PRINT_CSS = `
   body {
@@ -24,6 +30,15 @@ const BASE_PRINT_CSS = `
   }
 `
 
+const ZOOM_PRINT_RESET = `
+  .viewer-zoom-container {
+    transform: none !important;
+  }
+  .viewer-zoom-height {
+    height: auto !important;
+  }
+`
+
 const DOC_PRINT_STYLE = `
 @page {
   size: A4;
@@ -32,6 +47,7 @@ const DOC_PRINT_STYLE = `
 
 @media print {
   ${BASE_PRINT_CSS}
+  ${ZOOM_PRINT_RESET}
 
   .doc-source-hidden {
     display: block !important;
@@ -131,6 +147,7 @@ const SLIDE_PRINT_STYLE = `
 
 @media print {
   ${BASE_PRINT_CSS}
+  ${ZOOM_PRINT_RESET}
 
   .slide-wrapper {
     display: block;
@@ -156,13 +173,83 @@ const SLIDE_PRINT_STYLE = `
 export function ViewerShell({ children, type }: ViewerShellProps) {
   const isSlide = type === 'slide'
   const contentRef = useRef<HTMLDivElement>(null)
+  const zoomContentRef = useRef<HTMLDivElement>(null)
   const [showPageNum, setShowPageNum] = useState(true)
+  const [zoom, setZoom] = useState(1)
+  const [contentHeight, setContentHeight] = useState(0)
 
   const handlePrint = useReactToPrint({
     contentRef,
     pageStyle: isSlide ? SLIDE_PRINT_STYLE : DOC_PRINT_STYLE,
     documentTitle: 'JS Printer',
   })
+
+  useEffect(() => {
+    const el = zoomContentRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      setContentHeight(entries[0].contentRect.height)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const maxDefaultZoom = isSlide
+    ? +(CONTENT_WIDTH.doc / CONTENT_WIDTH.slide).toFixed(2)
+    : 1
+
+  const calcFitZoom = useCallback(() => {
+    const vw = window.innerWidth - 80
+    const cw = CONTENT_WIDTH[type]
+    return Math.min(
+      Math.max(Math.round((vw / cw) * 100) / 100, MIN_ZOOM),
+      maxDefaultZoom,
+    )
+  }, [type, maxDefaultZoom])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--viewer-zoom', String(zoom))
+    window.dispatchEvent(new Event('viewer-zoom-change'))
+    return () => {
+      document.documentElement.style.removeProperty('--viewer-zoom')
+    }
+  }, [zoom])
+
+  useEffect(() => {
+    setZoom(calcFitZoom())
+    const handler = () => setZoom(calcFitZoom())
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [calcFitZoom])
+
+  const zoomIn = useCallback(
+    () => setZoom((z) => Math.min(+(z + ZOOM_STEP).toFixed(2), MAX_ZOOM)),
+    [],
+  )
+  const zoomOut = useCallback(
+    () => setZoom((z) => Math.max(+(z - ZOOM_STEP).toFixed(2), MIN_ZOOM)),
+    [],
+  )
+  const zoomReset = useCallback(() => setZoom(1), [])
+  const fitToWidth = useCallback(() => setZoom(calcFitZoom()), [calcFitZoom])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return
+      if (e.key === '=' || e.key === '+') {
+        e.preventDefault()
+        zoomIn()
+      } else if (e.key === '-') {
+        e.preventDefault()
+        zoomOut()
+      } else if (e.key === '0') {
+        e.preventDefault()
+        zoomReset()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [zoomIn, zoomOut, zoomReset])
 
   const togglePageNum = useCallback(() => {
     setShowPageNum((prev) => {
@@ -180,10 +267,47 @@ export function ViewerShell({ children, type }: ViewerShellProps) {
     })
   }, [])
 
+  const zoomPct = Math.round(zoom * 100)
+
   return (
     <>
       <BookSwitcher />
       <FloatingNav />
+
+      <div className="print-button fixed bottom-6 left-6 z-50 flex items-center gap-1 bg-white/90 backdrop-blur rounded-full shadow-lg border border-gray-200 px-2 py-1.5">
+        <button
+          className="p-1.5 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors disabled:opacity-30"
+          onClick={zoomOut}
+          disabled={zoom <= MIN_ZOOM}
+          title="Zoom out (Ctrl+-)"
+        >
+          <Minus size={16} />
+        </button>
+        <button
+          className="min-w-[3.5rem] text-center text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+          onClick={zoomReset}
+          title="Reset zoom (Ctrl+0)"
+        >
+          {zoomPct}%
+        </button>
+        <button
+          className="p-1.5 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors disabled:opacity-30"
+          onClick={zoomIn}
+          disabled={zoom >= MAX_ZOOM}
+          title="Zoom in (Ctrl+=)"
+        >
+          <Plus size={16} />
+        </button>
+        <div className="w-px h-5 bg-gray-200 mx-1" />
+        <button
+          className="p-1.5 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+          onClick={fitToWidth}
+          title="Fit to width"
+        >
+          <Maximize size={16} />
+        </button>
+      </div>
+
       <div className="print-button fixed bottom-6 right-6 z-50 flex items-center gap-2">
         {!isSlide && (
           <button
@@ -208,7 +332,28 @@ export function ViewerShell({ children, type }: ViewerShellProps) {
           PDF 저장
         </button>
       </div>
-      <div ref={contentRef}>{children}</div>
+
+      <div ref={contentRef}>
+        <div
+          className="viewer-zoom-height"
+          style={{
+            height: contentHeight ? contentHeight * zoom : undefined,
+            overflow: 'visible',
+          }}
+        >
+          <div
+            ref={zoomContentRef}
+            className="viewer-zoom-container"
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top center',
+            }}
+          >
+            {children}
+          </div>
+        </div>
+        <div className="nav-scroll-spacer" />
+      </div>
     </>
   )
 }

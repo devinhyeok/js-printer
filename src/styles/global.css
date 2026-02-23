@@ -474,6 +474,10 @@ mjx-container[display='true'] {
   .slide h3 {
     scroll-margin-top: 40px;
   }
+
+  .nav-scroll-spacer {
+    height: 95vh;
+  }
 }
 
 /* =====================
@@ -488,6 +492,18 @@ mjx-container[display='true'] {
     background: white;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .viewer-zoom-container {
+    transform: none !important;
+  }
+
+  .viewer-zoom-height {
+    height: auto !important;
+  }
+
+  .nav-scroll-spacer {
+    display: none !important;
   }
 
   .doc-source-hidden {
